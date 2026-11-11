@@ -1,0 +1,44 @@
+# Supply-chain policy. pnpm 12 rejects unknown keys, so a typo fails the install
+# instead of silently disabling a control.
+
+# Skip versions published less than 3 days ago (minutes). axios (2026-03-31) and TanStack
+# (2026-05-11) were pulled within hours.
+minimumReleaseAge: 4320
+
+# Registry-only subdependencies (no git, tarball or URL sources).
+blockExoticSubdeps: true
+
+# Fail if a package that used to publish with provenance stops doing so.
+trustPolicy: no-downgrade
+# Reviewed exceptions: exact version, date, reason.
+trustPolicyExclude:
+  # 2026-11-10: chromium-bidi <=13.x shipped with SLSA provenance; the Chromium-aligned 157.x+ line
+  # is published by Google's chrome-devtools-npm account without it. Pinned by puppeteer-core@25.16.0
+  # (lighthouse -> @lhci/cli). CI-only, in a job with no secrets.
+  - chromium-bidi@157.0.8090-0
+# Drop exceptions that no longer match an installed package.
+trustPolicyExcludePrune: true
+
+overrides:
+  # 2026-11-10: @astrojs/astro2tsx (used by `astro check`) accepts `^1.7.1 || 2.0.0-beta.2`, and pnpm
+  # paired @emnapi/runtime beta with @emnapi/core 1.x ("this.bridge.setLastError is not a function").
+  # Remove when astro2tsx pins a single line.
+  '@emnapi/core': 1.11.3
+  '@emnapi/runtime': 1.11.3
+
+# Advisories accepted as unreachable (dev dependencies only). Any new advisory fails CI.
+auditConfig:
+  ignoreGhsas:
+    # basic-ftp <=6.2.0 (DoS on FTP listing parse) via @lhci/cli -> proxy-agent. CI never uses FTP.
+    # The fix needs basic-ftp 6.x, which breaks get-uri 5.x. Review: 2027-02-01.
+    - GHSA-c475-qrg2-pj4r
+    # minimatch <11.0.1 (DoS on crafted glob patterns) via eslint. All patterns are ours.
+    # The fix needs minimatch 11, not yet adopted by ESLint. Review: 2027-02-01.
+    - GHSA-g3hv-75wg-m249
+
+# Install scripts are blocked except for this allowlist.
+# (`onlyBuiltDependencies` is silently ignored since pnpm 11; the current key is `allowBuilds`.)
+strictDepBuilds: true
+allowBuilds:
+  esbuild: true # validates the bundler's native binary
+  workerd: true # Cloudflare Workers runtime for dev/preview
