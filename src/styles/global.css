@@ -8,8 +8,19 @@
   --shadow-*: initial;
   --text-*: initial;
 
-  --radius-sm: 4px;
-  --radius-md: 6px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 20px;
+  --radius-xl: 28px;
+
+  /* Product screens: 1 px edge + layered shadow. */
+  --shadow-screen:
+    0 1px 2px oklch(0% 0 0 / 0.08), 0 12px 24px -8px oklch(0% 0 0 / 0.18),
+    0 40px 80px -32px oklch(0% 0 0 / 0.45);
+
+  /* UI ≤300 ms with ease-out; scenes use the longer curve. */
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-scene: cubic-bezier(0.22, 1, 0.36, 1);
 
   /* Fluid type scale (clamp) */
   --text-xs: 0.8125rem;
@@ -42,6 +53,17 @@
   --color-ok: var(--status-ok);
   --color-warn: var(--status-warn);
   --color-critical: var(--status-critical);
+  --color-ink-field: var(--ink-field);
+  --color-ink-field-fg: var(--ink-field-fg);
+  --color-ink-field-muted: var(--ink-field-muted);
+  --color-ink-field-line: var(--ink-field-line);
+  --color-petrol-field: var(--petrol-field);
+  --color-petrol-field-fg: var(--petrol-field-fg);
+  --color-petrol-field-muted: var(--petrol-field-muted);
+  --color-petrol-field-line: var(--petrol-field-line);
+  --color-mist: var(--mist);
+  --color-action: var(--action);
+  --color-action-ink: var(--action-ink);
   --font-sans: var(--font-schibsted);
   --font-mono: var(--font-plex-mono);
 }
