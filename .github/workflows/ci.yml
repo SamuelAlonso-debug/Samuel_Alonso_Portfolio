@@ -1,0 +1,234 @@
+# CI/CD chain:
+#   PR ──► gates (quality · E2E+axe · Lighthouse · security) + Cloudflare preview
+#   merge to main ──► same gates ──► promote (fast-forward `production`)
+#   ──► Workers Builds deploys production ──► verify-production checks the live deploy.
+# GitHub never holds a Cloudflare token. Workers Builds re-runs the browserless gates
+# before every build.
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    name: Quality and build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: pnpm (version from packageManager)
+        uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
+
+      - name: Node (version from .node-version)
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .node-version
+          cache: pnpm
+
+      - name: Install (frozen lockfile, supply-chain policy enforced)
+        run: pnpm install --frozen-lockfile
+
+      - name: Types, lint (incl. a11y), format, spelling
+        run: pnpm run check
+
+      - name: Unit tests (evidence schema, i18n parity)
+        run: pnpm test
+
+      - name: Build
+        run: pnpm build
+
+      - name: Upload build for downstream jobs
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: dist
+          # `astro preview` needs the redirect the adapter writes to .wrangler/deploy/config.json.
+          path: |
+            dist/
+            .wrangler/deploy/config.json
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 7
+
+  e2e:
+    name: E2E and accessibility
+    needs: quality
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: pnpm
+        uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
+
+      - name: Node
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .node-version
+          cache: pnpm
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Download build
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: dist
+          path: .
+
+      # No --with-deps: the runner image already has the system libraries, and apt mirrors are an
+      # extra network dependency (DNS failures on 2026-11-11 blocked the job twice).
+      - name: Install Chromium
+        run: pnpm exec playwright install chromium
+
+      - name: E2E on the real build (CSP, axe WCAG 2.2 AA, i18n, 404)
+        run: pnpm test:e2e
+
+      - name: Playwright report
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 7
+
+  lighthouse:
+    name: Lighthouse budgets
+    needs: quality
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    # Read-only job with no secrets: @lhci/cli pulls in the chromium-bidi trustPolicy exception.
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: pnpm
+        uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
+
+      - name: Node
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .node-version
+          cache: pnpm
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Download build
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: dist
+          path: .
+
+      - name: Lighthouse CI (performance ≥95, accessibility and best practices 100)
+        run: pnpm lhci
+
+      - name: Lighthouse reports
+        if: ${{ always() }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: lighthouse
+          path: .lighthouseci/
+          include-hidden-files: true
+          retention-days: 14
+
+  security:
+    name: Security
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout (full history for gitleaks)
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      # CLI instead of gitleaks-action: the action derives commit ranges per event and failed on the
+      # first push (it asked for the root commit's parent). The CLI scans the full history the same
+      # way every time, with no API calls or extra permissions. Version and SHA-256 pinned.
+      - name: Install gitleaks (pinned, checksum-verified)
+        env:
+          GITLEAKS_VERSION: 8.30.1
+          GITLEAKS_SHA256: 551f6fc83ea457d62a0d98237cbad105af8d557003051f41f3e7ca7b3f2470eb
+        run: |
+          curl -fsSL -o "${RUNNER_TEMP}/gitleaks.tar.gz" \
+            "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz"
+          echo "${GITLEAKS_SHA256}  ${RUNNER_TEMP}/gitleaks.tar.gz" | sha256sum --check --strict
+          tar -xzf "${RUNNER_TEMP}/gitleaks.tar.gz" -C "${RUNNER_TEMP}" gitleaks
+
+      - name: Secrets in full history (gitleaks)
+        run: '"${RUNNER_TEMP}/gitleaks" git --redact --no-banner --exit-code 1 .'
+
+      # Pinned so a new zizmor rule cannot break an unrelated PR. Bump by hand.
+      - name: Workflow static analysis (zizmor)
+        uses: zizmorcore/zizmor-action@45d7276c9ca790aabd705e31ca99c6185c3e76dd # v0.8.1
+        with:
+          version: 1.32.0
+          advanced-security: false
+
+      - name: pnpm
+        uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
+
+      - name: Dependency advisories (fails on any unreviewed advisory)
+        run: pnpm audit
+
+  # CD: production only receives commits that passed every gate.
+  # Workers Builds deploys from `production`; this job fast-forwards it. No Cloudflare token in GitHub.
+  promote:
+    name: Promote to production
+    needs: [quality, e2e, lighthouse, security]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: write # only to move the production branch via the API
+    concurrency:
+      group: production
+      cancel-in-progress: false
+    steps:
+      - name: Fast-forward production to the gated commit
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          SHA: ${{ github.sha }}
+        # force=false: fails instead of rewriting if production is not an ancestor of this commit.
+        run: gh api --method PATCH "repos/${REPO}/git/refs/heads/production" -f sha="${SHA}" -F force=false
+
+  verify-production:
+    name: Verify production
+    needs: promote
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Node
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .node-version
+
+      - name: Wait for this commit, then check headers, routes, CSP, caching and Observatory
+        env:
+          SITE_URL: ${{ vars.SITE_URL }}
+          EXPECTED_SHA: ${{ github.sha }}
+        run: node scripts/verify-deploy.ts
