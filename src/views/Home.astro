@@ -1,19 +1,16 @@
 ---
-import Button from '../components/Button.astro';
 import type { Locale } from '../i18n/config';
 import { t } from '../i18n/ui';
 import Base from '../layouts/Base.astro';
+import { sampleCopy } from '../samples/copy';
 
 interface Props {
   locale: Locale;
 }
 
 const { locale } = Astro.props;
-
-const profiles = [
-  { label: 'GitHub', href: 'https://github.com/SamuelAlonso-debug' },
-  { label: 'LinkedIn', href: 'https://www.linkedin.com/in/samuel-alonso-971094365' },
-];
+const copy = sampleCopy[locale];
+const words = copy.statement.split(' ');
 ---
 
 <Base
@@ -21,25 +18,126 @@ const profiles = [
   routeKey="home"
   title={t(locale, 'meta.home.title')}
   description={t(locale, 'meta.home.description')}
+  tone="ink"
 >
-  <section aria-labelledby="hero-title" class="mx-auto max-w-300 px-5 pt-32 pb-20 sm:px-8 md:pt-40">
-    <h1
-      id="hero-title"
-      class="text-[clamp(3rem,1.6rem+7vw,8rem)] leading-[0.9] font-bold tracking-[-0.035em]"
-    >
-      Samuel Alonso
-    </h1>
-    <p class="mt-6 text-xl text-muted">{t(locale, 'home.role')}</p>
-    <p class="mt-6 max-w-[62ch] text-lg">{t(locale, 'home.lede')}</p>
-    <h2 class="mt-12 text-sm text-muted">{t(locale, 'home.elsewhere')}</h2>
-    <ul class="mt-3 flex flex-wrap gap-3">
-      {profiles.map((profile) => (
-        <li>
-          <Button href={profile.href} rel="me noopener">
-            {profile.label}
-          </Button>
-        </li>
-      ))}
-    </ul>
+  <section id="hero" class="hero" data-tone="ink" aria-labelledby="hero-name">
+    <div class="stage">
+      <h1 id="hero-name" class="name">
+        <span>Samuel</span> <span>Alonso</span>
+      </h1>
+      <div id="hero-copy" class="copy">
+        <p class="font-medium text-muted">{t(locale, 'home.role')}</p>
+        <p class="headline">{copy.headline}</p>
+      </div>
+    </div>
+  </section>
+
+  <section
+    id="statement"
+    class="statement"
+    data-scene
+    data-tone="ink"
+    aria-label={t(locale, 'home.statement')}
+  >
+    <div class="stage">
+      <p>
+        {words.map((word, i) => (
+          <>
+            <span class="w">{word}</span>
+            {i < words.length - 1 && ' '}
+          </>
+        ))}
+      </p>
+    </div>
   </section>
 </Base>
+
+<script>
+  import '../scripts/scenes';
+</script>
+
+<style>
+  section {
+    --pad: clamp(20px, 4vw, 64px);
+    position: relative;
+  }
+  /* Pinned scroll run, 15% shorter than the v3 prototype: height = run + 100vh. */
+  .statement {
+    height: 196vh;
+  }
+  .stage {
+    position: sticky;
+    top: 0;
+    height: 100svh;
+    overflow: hidden;
+  }
+  .hero .stage {
+    position: relative;
+  }
+  .name {
+    position: absolute;
+    left: var(--pad);
+    line-height: 0.84;
+    font-weight: 700;
+    letter-spacing: -0.035em;
+    bottom: 5vh;
+    z-index: 2;
+    font-size: clamp(4.6rem, 15vw, 16rem);
+  }
+  .name span {
+    display: block;
+  }
+  .copy {
+    position: absolute;
+    right: var(--pad);
+    bottom: 7vh;
+    z-index: 3;
+    width: min(31rem, 40vw);
+  }
+  .headline {
+    margin-top: 10px;
+    font-size: clamp(1.5rem, 1.1rem + 1.1vw, 2.1rem);
+    line-height: 1.15;
+    font-weight: 600;
+    letter-spacing: -0.015em;
+    text-wrap: balance;
+  }
+  .statement .stage {
+    display: grid;
+    align-items: center;
+    padding-inline: var(--pad);
+  }
+  .statement p {
+    max-width: 20ch;
+    font-size: clamp(2rem, 1rem + 4.4vw, 5.25rem);
+    line-height: 1.08;
+    font-weight: 700;
+    letter-spacing: -0.035em;
+  }
+  /* Dimmed words keep ≥3:1 on the ink field (large text). */
+  :global(html.js) .w {
+    opacity: 0.4;
+  }
+  @media (max-width: 820px) {
+    .name {
+      bottom: 4vh;
+      font-size: clamp(4rem, 21vw, 8rem);
+    }
+    .copy {
+      right: var(--pad);
+      bottom: calc(4vh + 1.68 * clamp(4rem, 21vw, 8rem) + 28px);
+      left: var(--pad);
+      width: auto;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .statement {
+      height: auto;
+    }
+    .stage {
+      position: relative;
+      height: auto;
+      min-height: 100svh;
+    }
+  }
+</style>

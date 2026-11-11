@@ -43,6 +43,14 @@ const GRAPHIC = 3;
 
 const light = block(':root');
 const dark = { ...light, ...block(":root[data-theme='dark']") };
+/** Tone blocks point at field tokens: resolve `var(--x)` against the light block. */
+const tone = (name: string): Tokens =>
+  Object.fromEntries(
+    Object.entries({ ...light, ...block(`:root[data-tone='${name}']`) }).map(([k, v]) => [
+      k,
+      v.replace(/^var\(--([\w-]+)\)$/, (_, ref: string) => light[ref] ?? v),
+    ]),
+  );
 
 // [foreground, background, minimum ratio]
 const themed: [string, string, number][] = [
@@ -67,14 +75,16 @@ const fields: [string, string, number][] = [
   ['petrol-field-muted', 'petrol-field', TEXT],
   ['action-ink', 'action', TEXT],
   ['action-ink', 'action-hover', TEXT],
-  ['action', 'ink-field', GRAPHIC],
-  ['action', 'petrol-field', GRAPHIC],
+  ['action', 'ink-field', TEXT],
+  ['action', 'petrol-field', TEXT],
 ];
 
 describe('token contrast (WCAG 2.2 AA)', () => {
   for (const [name, tokens] of [
     ['light', light],
     ['dark', dark],
+    ['ink tone', tone('ink')],
+    ['petrol tone', tone('petrol')],
   ] as const) {
     it.each(themed)(`${name}: %s on %s ≥ %d:1`, (fg, bg, min) => {
       expect(contrast(tokens, fg, bg)).toBeGreaterThanOrEqual(min);
