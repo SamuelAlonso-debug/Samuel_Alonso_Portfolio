@@ -76,6 +76,9 @@
 
 @layer base {
   html {
+    transition:
+      background-color 700ms var(--ease-scene),
+      color 700ms var(--ease-scene);
     background-color: var(--paper);
     color: var(--ink);
     font-family: var(--font-sans);

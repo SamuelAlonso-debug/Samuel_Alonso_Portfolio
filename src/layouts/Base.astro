@@ -17,9 +17,11 @@ interface Props {
   /** Page with an equivalent in the other locale. Absent (e.g. 404): no canonical or alternates. */
   routeKey?: RouteKey | undefined;
   noindex?: boolean | undefined;
+  /** Field tone for pages that start on a color field (home). */
+  tone?: 'ink' | 'petrol' | undefined;
 }
 
-const { locale, title, description, routeKey, noindex = false } = Astro.props;
+const { locale, title, description, routeKey, noindex = false, tone } = Astro.props;
 
 const canonical = routeKey ? new URL(pathFor(routeKey, locale), Astro.site).href : undefined;
 const alternates = routeKey
@@ -32,7 +34,7 @@ const xDefault = routeKey ? new URL(pathFor(routeKey, 'es'), Astro.site).href : 
 ---
 
 <!doctype html>
-<html lang={htmlLang[locale]}>
+<html lang={htmlLang[locale]} data-tone={tone}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
