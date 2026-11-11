@@ -21,6 +21,14 @@ const expectedSha = (process.env['EXPECTED_SHA'] ?? '').slice(0, 7);
 const timeoutMs = Number(process.env['VERIFY_TIMEOUT_MS'] ?? 15 * 60_000);
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
+// fetch() wraps DNS and TLS failures in a generic "fetch failed"; the cause names the real problem.
+function describeError(error: unknown): string {
+  const cause = error instanceof Error ? error.cause : undefined;
+  if (!(cause instanceof Error)) return String(error);
+  const code = (cause as NodeJS.ErrnoException).code;
+  return `${String(error)} (${code ? `${code}: ` : ''}${cause.message})`;
+}
+
 function check(name: string, ok: boolean, detail = ''): void {
   if (ok) passed++;
   else failed++;
@@ -81,7 +89,7 @@ async function waitForDeploy(): Promise<void> {
         return;
       }
     } catch (error) {
-      seen = `network error: ${String(error)}`;
+      seen = `network error: ${describeError(error)}`;
     }
     console.log(`… production serves ${seen}; waiting for ${expectedSha}`);
     await sleep(POLL_INTERVAL_MS);
@@ -102,7 +110,7 @@ async function observatoryGrade(host: string): Promise<string> {
         `… Observatory has no grade yet (attempt ${attempt}): ${body.error ?? response.status}`,
       );
     } catch (error) {
-      console.log(`… Observatory unreachable (attempt ${attempt}): ${String(error)}`);
+      console.log(`… Observatory unreachable (attempt ${attempt}): ${describeError(error)}`);
     }
     await sleep(POLL_INTERVAL_MS);
   }
