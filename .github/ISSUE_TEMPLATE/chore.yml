@@ -1,0 +1,63 @@
+name: Chore
+description: Maintenance, tooling, CI or dependencies.
+labels: [type/chore, workflow/backlog]
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: What and why, in one or two sentences.
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria
+      value: |
+        - [ ]
+    validations:
+      required: true
+  - type: textarea
+    id: scope
+    attributes:
+      label: Scope
+      value: |
+        In:
+        - 
+        Out:
+        -
+    validations:
+      required: true
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority
+      options: [critical, high, medium, low]
+      default: 2
+    validations:
+      required: true
+  - type: dropdown
+    id: size
+    attributes:
+      label: Size
+      description: Changed lines in the PR, lockfiles excluded. XL must be split.
+      options: ['XS (≤50)', 'S (≤150)', 'M (≤300)', 'L (≤550)', 'XL (>550, split)']
+      default: 1
+    validations:
+      required: true
+  - type: dropdown
+    id: type
+    attributes:
+      label: Type
+      options: [feature, fix, refactor, chore, ci, test, security, design, content, docs]
+      default: 3
+    validations:
+      required: true
+  - type: dropdown
+    id: env
+    attributes:
+      label: Environment
+      options: [dev, preview, production]
+      default: 0
+    validations:
+      required: true
