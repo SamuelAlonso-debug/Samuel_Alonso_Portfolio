@@ -40,11 +40,12 @@ pnpm test:e2e         # E2E + accessibility on the real build
 
 ## Documentation
 
-Project context, decision records and contribution rules live in the [Wiki](https://github.com/SamuelAlonso-debug/Samuel_Alonso_Portfolio/wiki):
+The [Wiki](https://github.com/SamuelAlonso-debug/Samuel_Alonso_Portfolio/wiki) holds everything beyond the code:
 
-- [Project context](https://github.com/SamuelAlonso-debug/Samuel_Alonso_Portfolio/wiki/Project-context)
-- [Decision records](https://github.com/SamuelAlonso-debug/Samuel_Alonso_Portfolio/wiki/Decision-records)
-- [Contributing](https://github.com/SamuelAlonso-debug/Samuel_Alonso_Portfolio/wiki/Contributing)
+- [Project principles](https://github.com/SamuelAlonso-debug/Samuel_Alonso_Portfolio/wiki/Project-principles): goal, constraints, working and design principles.
+- [Requirements](https://github.com/SamuelAlonso-debug/Samuel_Alonso_Portfolio/wiki/Requirements): what the system must do and why.
+- [Roadmap](https://github.com/SamuelAlonso-debug/Samuel_Alonso_Portfolio/wiki/Roadmap): phases and current status.
+- [Contributing](https://github.com/SamuelAlonso-debug/Samuel_Alonso_Portfolio/wiki/Contributing): workflow, PR size limit, labels and conventions.
 
 ## License
 

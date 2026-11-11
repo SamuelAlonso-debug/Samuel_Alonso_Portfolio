@@ -1,5 +1,5 @@
 blank_issues_enabled: false
 contact_links:
-  - name: Project context and decisions
+  - name: Project principles and requirements
     url: https://github.com/SamuelAlonso-debug/Samuel_Alonso_Portfolio/wiki
-    about: Goals, constraints, decision records and contributing rules.
+    about: Principles, requirements, roadmap and contributing rules.

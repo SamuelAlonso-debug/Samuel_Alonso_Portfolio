@@ -1,5 +1,5 @@
-name: Decision
-description: Record a decision. The accepted result goes to the Wiki (Decision records).
+name: Requirement
+description: Propose or change a project requirement. The accepted result goes to the Wiki (Requirements).
 labels: [type/docs, workflow/backlog]
 body:
   - type: textarea
