@@ -1,0 +1,29 @@
+# Weekly `pnpm audit` against the pinned versions, even when the code does not change.
+# Compensates for GitHub's dependency graph not reading pnpm 12's two-document lockfile, so
+# Dependabot security alerts may not fire.
+name: Weekly audit
+
+on:
+  schedule:
+    - cron: '0 15 * * 1' # Monday 09:00 America/Mexico_City
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    name: pnpm audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: pnpm
+        uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
+
+      - name: Dependency advisories
+        run: pnpm audit
