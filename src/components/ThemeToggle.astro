@@ -15,14 +15,15 @@ const { locale } = Astro.props;
   data-label-system={t(locale, 'theme.system')}
   data-label-light={t(locale, 'theme.light')}
   data-label-dark={t(locale, 'theme.dark')}
-  class="inline-flex min-h-11 items-center gap-2 rounded-sm border border-line px-3 text-sm text-ink hover:bg-surface"
+  class="inline-grid size-10 place-items-center rounded-full bg-ink/8 text-ink transition-[scale,background-color] duration-150 ease-out hover:bg-ink/14 active:scale-96"
 >
   <svg class="size-4" viewBox="0 0 16 16" aria-hidden="true">
     <circle cx="8" cy="8" r="6.5" fill="none" stroke="currentColor" stroke-width="1.5"></circle>
     <path d="M8 1.5a6.5 6.5 0 0 1 0 13Z" fill="currentColor"></path>
   </svg>
-  <span>{t(locale, 'theme.button')}:</span>
-  <span data-theme-label>{t(locale, 'theme.system')}</span>
+  <span class="sr-only">
+    {t(locale, 'theme.button')}: <span data-theme-label>{t(locale, 'theme.system')}</span>
+  </span>
 </button>
 
 <script>

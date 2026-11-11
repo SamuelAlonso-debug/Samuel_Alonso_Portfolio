@@ -18,6 +18,11 @@
     0 1px 2px oklch(0% 0 0 / 0.08), 0 12px 24px -8px oklch(0% 0 0 / 0.18),
     0 40px 80px -32px oklch(0% 0 0 / 0.45);
 
+  /* Floating nav: hairline ring + soft drop. */
+  --shadow-float:
+    0 0 0 1px color-mix(in oklch, var(--ink) 12%, transparent),
+    0 12px 32px -16px oklch(0% 0 0 / 0.35);
+
   /* UI ≤300 ms with ease-out; scenes use the longer curve. */
   --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
   --ease-scene: cubic-bezier(0.22, 1, 0.36, 1);
@@ -63,6 +68,7 @@
   --color-petrol-field-line: var(--petrol-field-line);
   --color-mist: var(--mist);
   --color-action: var(--action);
+  --color-action-hover: var(--action-hover);
   --color-action-ink: var(--action-ink);
   --font-sans: var(--font-schibsted);
   --font-mono: var(--font-plex-mono);

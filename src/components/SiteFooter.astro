@@ -16,8 +16,7 @@ const year = new Date(__BUILD_DATE__).getUTCFullYear();
       © {year} Samuel Alonso Hernández. {t(locale, 'footer.rights')}
     </p>
     <p class="font-mono text-xs">
-      {t(locale, 'footer.build')}
-      <span data-build-sha>{__BUILD_SHA__}</span>
+      {t(locale, 'footer.build')} <span data-build-sha>{__BUILD_SHA__}</span>
       {' · '}
       <time datetime={__BUILD_DATE__}>{__BUILD_DATE__}</time>
     </p>

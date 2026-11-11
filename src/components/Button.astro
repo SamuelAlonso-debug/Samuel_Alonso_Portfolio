@@ -1,0 +1,34 @@
+---
+/** Link (`href`) or button. Amber `primary` marks the one primary action of a view. */
+interface Props {
+  href?: string;
+  variant?: 'primary' | 'secondary' | 'ghost';
+  size?: 'sm' | 'md';
+  lang?: string;
+  hreflang?: string;
+  rel?: string;
+}
+
+const { href, variant = 'secondary', size = 'md', ...attrs } = Astro.props;
+
+const classes = [
+  'inline-flex items-center justify-center gap-2.5 rounded-full font-semibold no-underline',
+  'transition-[scale,background-color] duration-150 ease-out active:scale-96',
+  size === 'md' ? 'min-h-12 px-5.5 text-base' : 'min-h-10 px-4 text-sm',
+  {
+    primary: 'bg-action text-action-ink hover:bg-action-hover',
+    secondary: 'border border-current/45 hover:bg-current/8',
+    ghost: 'bg-current/10 hover:bg-current/16',
+  }[variant],
+];
+---
+
+{href ? (
+  <a href={href} class:list={classes} {...attrs}>
+    <slot />
+  </a>
+) : (
+  <button type="button" class:list={classes} {...attrs}>
+    <slot />
+  </button>
+)}

@@ -18,7 +18,7 @@ const target = otherLocale(locale);
   lang={htmlLang[target]}
   aria-label={t(locale, 'lang.switchLabel')}
   data-lang-switch
-  class="inline-flex min-h-11 items-center rounded-sm px-3 text-sm text-ink underline hover:bg-surface"
+  class="inline-flex min-h-10 items-center rounded-full px-3 text-sm text-muted no-underline transition-colors duration-150 hover:bg-ink/8 hover:text-ink"
 >
   {t(locale, 'lang.switch')}
 </a>

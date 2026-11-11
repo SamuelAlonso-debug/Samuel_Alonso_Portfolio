@@ -66,6 +66,7 @@ const fields: [string, string, number][] = [
   ['petrol-field-fg', 'petrol-field', TEXT],
   ['petrol-field-muted', 'petrol-field', TEXT],
   ['action-ink', 'action', TEXT],
+  ['action-ink', 'action-hover', TEXT],
   ['action', 'ink-field', GRAPHIC],
   ['action', 'petrol-field', GRAPHIC],
 ];
