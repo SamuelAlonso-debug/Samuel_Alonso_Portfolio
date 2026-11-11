@@ -2,6 +2,7 @@
 import type { Locale } from '../i18n/config';
 import { t } from '../i18n/ui';
 import Base from '../layouts/Base.astro';
+import ScreenWall from '../samples/ScreenWall.astro';
 import { sampleCopy } from '../samples/copy';
 
 interface Props {
@@ -20,14 +21,25 @@ const words = copy.statement.split(' ');
   description={t(locale, 'meta.home.description')}
   tone="ink"
 >
-  <section id="hero" class="hero" data-tone="ink" aria-labelledby="hero-name">
+  <section id="hero" class="hero" data-scene data-tone="ink" aria-labelledby="hero-name">
     <div class="stage">
+      <div id="hero-photo" class="photo bg-surface">
+        <ScreenWall />
+        <div id="hero-veil" class="veil"></div>
+      </div>
       <h1 id="hero-name" class="name">
         <span>Samuel</span> <span>Alonso</span>
       </h1>
       <div id="hero-copy" class="copy">
         <p class="font-medium text-muted">{t(locale, 'home.role')}</p>
         <p class="headline">{copy.headline}</p>
+      </div>
+      <div class="dock" aria-hidden="true">
+        <div id="dock-name" class="dock-name">
+          <span>Samuel</span>
+          <span>Alonso</span>
+        </div>
+        <div id="dock-copy" class="dock-copy"></div>
       </div>
     </div>
   </section>
@@ -61,7 +73,10 @@ const words = copy.statement.split(' ');
     --pad: clamp(20px, 4vw, 64px);
     position: relative;
   }
-  /* Pinned scroll run, 15% shorter than the v3 prototype: height = run + 100vh. */
+  /* Pinned scroll runs, 15% shorter than the v3 prototype: height = run + 100vh. */
+  .hero {
+    height: 213vh;
+  }
   .statement {
     height: 196vh;
   }
@@ -71,20 +86,44 @@ const words = copy.statement.split(' ');
     height: 100svh;
     overflow: hidden;
   }
-  .hero .stage {
-    position: relative;
+  .photo,
+  .dock {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
   }
-  .name {
+  .dock {
+    visibility: hidden;
+    pointer-events: none;
+  }
+  .veil {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    opacity: 0;
+    background: linear-gradient(
+      to top,
+      var(--paper) 20%,
+      color-mix(in oklch, var(--paper) 70%, transparent) 48%,
+      transparent 78%
+    );
+  }
+  .name,
+  .dock-name {
     position: absolute;
     left: var(--pad);
     line-height: 0.84;
     font-weight: 700;
     letter-spacing: -0.035em;
+  }
+  .name {
     bottom: 5vh;
     z-index: 2;
     font-size: clamp(4.6rem, 15vw, 16rem);
+    transform-origin: 0 0;
   }
-  .name span {
+  .name span,
+  .dock-name span {
     display: block;
   }
   .copy {
@@ -101,6 +140,16 @@ const words = copy.statement.split(' ');
     font-weight: 600;
     letter-spacing: -0.015em;
     text-wrap: balance;
+  }
+  .dock-name {
+    top: 19vh;
+    font-size: clamp(2.6rem, 5.6vw, 6rem);
+  }
+  .dock-copy {
+    position: absolute;
+    top: calc(19vh + 1.68 * clamp(2.6rem, 5.6vw, 6rem) + 36px);
+    left: var(--pad);
+    width: min(31rem, 40vw);
   }
   .statement .stage {
     display: grid;
@@ -129,8 +178,17 @@ const words = copy.statement.split(' ');
       left: var(--pad);
       width: auto;
     }
+    .dock-name {
+      top: 13vh;
+      font-size: clamp(2.4rem, 11vw, 3.4rem);
+    }
+    .dock-copy {
+      top: calc(13vh + 1.68 * clamp(2.4rem, 11vw, 3.4rem) + 20px);
+      width: calc(100vw - 2 * var(--pad));
+    }
   }
   @media (prefers-reduced-motion: reduce) {
+    .hero,
     .statement {
       height: auto;
     }
