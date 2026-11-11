@@ -1,0 +1,49 @@
+/*
+ * Design tokens, "spec sheet" direction (starting point; validated in the F2 spike).
+ * Cool neutrals biased toward the petrol accent; no pure gray, no cream.
+ * Status colors mark real states only, always with shape + label.
+ */
+:root {
+  color-scheme: light;
+  --paper: oklch(98.5% 0.004 240);
+  --surface: oklch(96.2% 0.006 240);
+  --ink: oklch(23% 0.02 245);
+  --muted: oklch(46% 0.015 245);
+  --line: oklch(90% 0.006 240);
+  --accent: oklch(48% 0.085 215);
+  --accent-ink: oklch(98.5% 0.004 240);
+  --status-ok: oklch(55% 0.13 150);
+  --status-warn: oklch(62% 0.14 70);
+  --status-critical: oklch(55% 0.19 27);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    color-scheme: dark;
+    --paper: oklch(17% 0.012 240);
+    --surface: oklch(21% 0.014 240);
+    --ink: oklch(94% 0.006 240);
+    --muted: oklch(72% 0.012 240);
+    --line: oklch(31% 0.012 240);
+    --accent: oklch(76% 0.09 205);
+    --accent-ink: oklch(17% 0.012 240);
+    --status-ok: oklch(72% 0.14 150);
+    --status-warn: oklch(80% 0.13 80);
+    --status-critical: oklch(70% 0.17 27);
+  }
+}
+
+/* Same dark values so the manual toggle wins in both directions. */
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --paper: oklch(17% 0.012 240);
+  --surface: oklch(21% 0.014 240);
+  --ink: oklch(94% 0.006 240);
+  --muted: oklch(72% 0.012 240);
+  --line: oklch(31% 0.012 240);
+  --accent: oklch(76% 0.09 205);
+  --accent-ink: oklch(17% 0.012 240);
+  --status-ok: oklch(72% 0.14 150);
+  --status-warn: oklch(80% 0.13 80);
+  --status-critical: oklch(70% 0.17 27);
+}
