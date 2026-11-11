@@ -1,0 +1,21 @@
+---
+/** Product screen frame: 1 px edge + layered shadow. Fixed colors: a screen keeps its own UI on any field. */
+interface Props {
+  dark?: boolean;
+  class?: string;
+}
+
+const { dark = false, class: className } = Astro.props;
+---
+
+<div
+  class:list={[
+    'overflow-hidden rounded-md text-[0.8rem] leading-[1.35] shadow-screen ring-1',
+    dark
+      ? 'bg-[oklch(14%_0.01_240)] text-[oklch(88%_0.02_150)] ring-white/10'
+      : 'bg-[oklch(99%_0.002_240)] text-[oklch(22%_0.02_245)] ring-black/6',
+    className,
+  ]}
+>
+  <slot />
+</div>
