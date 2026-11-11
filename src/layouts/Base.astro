@@ -1,0 +1,78 @@
+---
+import '../styles/global.css';
+import { Font } from 'astro:assets';
+import SiteFooter from '../components/SiteFooter.astro';
+import SiteHeader from '../components/SiteHeader.astro';
+import { htmlLang, locales, ogLocale, type Locale } from '../i18n/config';
+import { pathFor, type RouteKey } from '../i18n/routes';
+import { t } from '../i18n/ui';
+import { sha256Base64, THEME_INIT_SCRIPT } from '../lib/theme-init';
+
+Astro.csp?.insertScriptHash(`sha256-${await sha256Base64(THEME_INIT_SCRIPT)}`);
+
+interface Props {
+  locale: Locale;
+  title: string;
+  description: string;
+  /** Page with an equivalent in the other locale. Absent (e.g. 404): no canonical or alternates. */
+  routeKey?: RouteKey | undefined;
+  noindex?: boolean | undefined;
+}
+
+const { locale, title, description, routeKey, noindex = false } = Astro.props;
+
+const canonical = routeKey ? new URL(pathFor(routeKey, locale), Astro.site).href : undefined;
+const alternates = routeKey
+  ? locales.map((l) => ({
+      hreflang: htmlLang[l],
+      href: new URL(pathFor(routeKey, l), Astro.site).href,
+    }))
+  : [];
+const xDefault = routeKey ? new URL(pathFor(routeKey, 'es'), Astro.site).href : undefined;
+---
+
+<!doctype html>
+<html lang={htmlLang[locale]}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    {noindex && <meta name="robots" content="noindex" />}
+    {canonical && <link rel="canonical" href={canonical} />}
+    {alternates.map((a) => (
+      <link rel="alternate" hreflang={a.hreflang} href={a.href} />
+    ))}
+    {xDefault && <link rel="alternate" hreflang="x-default" href={xDefault} />}
+
+    <meta name="color-scheme" content="light dark" />
+    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#f7f9fa" />
+    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0b1116" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={t(locale, 'meta.siteName')} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:locale" content={ogLocale[locale]} />
+    {canonical && <meta property="og:url" content={canonical} />}
+
+    <Font cssVariable="--font-schibsted" preload />
+    <Font cssVariable="--font-plex-mono" />
+
+    <script is:inline set:html={THEME_INIT_SCRIPT} />
+  </head>
+  <body>
+    <a
+      href="#content"
+      class="sr-only rounded-sm bg-accent px-4 py-2 text-accent-ink focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-10"
+    >
+      {t(locale, 'a11y.skip')}
+    </a>
+    <SiteHeader locale={locale} routeKey={routeKey} />
+    <main id="content" tabindex="-1" class="focus:outline-none">
+      <slot />
+    </main>
+    <SiteFooter locale={locale} />
+  </body>
+</html>

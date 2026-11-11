@@ -1,0 +1,25 @@
+---
+import type { Locale } from '../i18n/config';
+import { t } from '../i18n/ui';
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const year = new Date(__BUILD_DATE__).getUTCFullYear();
+---
+
+<footer class="mt-24 border-t border-line">
+  <div class="mx-auto grid max-w-300 gap-3 px-4 py-8 text-sm text-muted sm:px-6 md:flex md:items-center md:justify-between">
+    <p>
+      © {year} Samuel Alonso Hernández. {t(locale, 'footer.rights')}
+    </p>
+    <p class="font-mono text-xs">
+      {t(locale, 'footer.build')}
+      <span data-build-sha>{__BUILD_SHA__}</span>
+      {' · '}
+      <time datetime={__BUILD_DATE__}>{__BUILD_DATE__}</time>
+    </p>
+  </div>
+</footer>

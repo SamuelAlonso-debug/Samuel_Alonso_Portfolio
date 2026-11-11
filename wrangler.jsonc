@@ -1,0 +1,11 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  // The Astro adapter fills in `main` and `assets` at build time.
+  "name": "samuel-alonso-portfolio",
+  "compatibility_date": "2026-11-01",
+  "observability": { "enabled": true },
+  // Unknown routes return dist/client/404.html with status 404 (without this the body is empty).
+  "assets": { "not_found_handling": "404-page" },
+  // F4: the contact form adds the `send_email` (Email Routing) and `ratelimits` bindings here,
+  // plus the TURNSTILE_SECRET_KEY secret via `wrangler secret put`.
+}
