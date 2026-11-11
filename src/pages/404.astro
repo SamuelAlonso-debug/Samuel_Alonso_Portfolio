@@ -1,4 +1,5 @@
 ---
+import Button from '../components/Button.astro';
 import { t } from '../i18n/ui';
 import Base from '../layouts/Base.astro';
 ---
@@ -9,20 +10,20 @@ import Base from '../layouts/Base.astro';
   description={t('es', 'notFound.body')}
   noindex
 >
-  <div class="mx-auto max-w-300 px-4 py-20 sm:px-6">
-    <p class="font-mono text-xs tracking-[0.08em] text-muted uppercase">404</p>
-    <h1 class="mt-4 text-3xl font-semibold tracking-tight">{t('es', 'notFound.title')}</h1>
+  <div class="mx-auto max-w-300 px-5 pt-32 pb-20 sm:px-8 md:pt-40">
+    <p class="text-sm text-muted">404</p>
+    <h1 class="mt-4 text-4xl font-bold tracking-tight">{t('es', 'notFound.title')}</h1>
     <p class="mt-4 text-lg">{t('es', 'notFound.body')}</p>
     <p class="mt-2 text-lg text-muted" lang="en">
       {t('en', 'notFound.body')}
     </p>
-    <p class="mt-8 flex flex-wrap gap-x-6 gap-y-2">
-      <a href="/" class="inline-flex min-h-11 items-center text-accent underline">
+    <p class="mt-8 flex flex-wrap gap-3">
+      <Button href="/" variant="primary">
         {t('es', 'notFound.back')}
-      </a>
-      <a href="/en/" lang="en" class="inline-flex min-h-11 items-center text-accent underline">
+      </Button>
+      <Button href="/en/" lang="en" hreflang="en">
         {t('en', 'notFound.back')}
-      </a>
+      </Button>
     </p>
   </div>
 </Base>

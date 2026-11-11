@@ -29,6 +29,7 @@
   --petrol-field-line: oklch(48% 0.06 215);
   --mist: oklch(90% 0.014 230);
   --action: oklch(82% 0.14 75);
+  --action-hover: oklch(86% 0.13 78);
   --action-ink: oklch(22% 0.03 70);
 }
 
