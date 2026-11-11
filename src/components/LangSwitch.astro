@@ -1,0 +1,24 @@
+---
+import { htmlLang, otherLocale, type Locale } from '../i18n/config';
+import { pathFor, type RouteKey } from '../i18n/routes';
+import { t } from '../i18n/ui';
+
+interface Props {
+  locale: Locale;
+  routeKey: RouteKey;
+}
+
+const { locale, routeKey } = Astro.props;
+const target = otherLocale(locale);
+---
+
+<a
+  href={pathFor(routeKey, target)}
+  hreflang={htmlLang[target]}
+  lang={htmlLang[target]}
+  aria-label={t(locale, 'lang.switchLabel')}
+  data-lang-switch
+  class="inline-flex min-h-11 items-center rounded-sm px-3 text-sm text-ink underline hover:bg-surface"
+>
+  {t(locale, 'lang.switch')}
+</a>

@@ -1,0 +1,79 @@
+---
+import type { Locale } from '../i18n/config';
+import { t } from '../i18n/ui';
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+---
+
+<button
+  type="button"
+  data-theme-toggle
+  data-label-system={t(locale, 'theme.system')}
+  data-label-light={t(locale, 'theme.light')}
+  data-label-dark={t(locale, 'theme.dark')}
+  class="inline-flex min-h-11 items-center gap-2 rounded-sm border border-line px-3 text-sm text-ink hover:bg-surface"
+>
+  <svg class="size-4" viewBox="0 0 16 16" aria-hidden="true">
+    <circle cx="8" cy="8" r="6.5" fill="none" stroke="currentColor" stroke-width="1.5"></circle>
+    <path d="M8 1.5a6.5 6.5 0 0 1 0 13Z" fill="currentColor"></path>
+  </svg>
+  <span>{t(locale, 'theme.button')}:</span>
+  <span data-theme-label>{t(locale, 'theme.system')}</span>
+</button>
+
+<script>
+  type Mode = 'system' | 'light' | 'dark';
+  const KEY = 'theme';
+  const ORDER: readonly Mode[] = ['system', 'light', 'dark'];
+
+  function readMode(): Mode {
+    try {
+      const value = localStorage.getItem(KEY);
+      return value === 'light' || value === 'dark' ? value : 'system';
+    } catch {
+      return 'system';
+    }
+  }
+
+  function labelFor(button: HTMLButtonElement, mode: Mode): string {
+    const labels: Record<Mode, string | undefined> = {
+      system: button.dataset['labelSystem'],
+      light: button.dataset['labelLight'],
+      dark: button.dataset['labelDark'],
+    };
+    return labels[mode] ?? mode;
+  }
+
+  function applyMode(mode: Mode): void {
+    const root = document.documentElement;
+    if (mode === 'system') delete root.dataset['theme'];
+    else root.dataset['theme'] = mode;
+
+    try {
+      if (mode === 'system') localStorage.removeItem(KEY);
+      else localStorage.setItem(KEY, mode);
+    } catch {
+      // No storage (private mode): the theme lasts for this page only.
+    }
+
+    document.querySelectorAll<HTMLButtonElement>('[data-theme-toggle]').forEach((button) => {
+      const label = button.querySelector('[data-theme-label]');
+      if (label) label.textContent = labelFor(button, mode);
+      button.dataset['mode'] = mode;
+    });
+  }
+
+  applyMode(readMode());
+
+  document.querySelectorAll<HTMLButtonElement>('[data-theme-toggle]').forEach((button) => {
+    button.addEventListener('click', () => {
+      const current = (button.dataset['mode'] as Mode | undefined) ?? readMode();
+      const next = ORDER[(ORDER.indexOf(current) + 1) % ORDER.length] ?? 'system';
+      applyMode(next);
+    });
+  });
+</script>
