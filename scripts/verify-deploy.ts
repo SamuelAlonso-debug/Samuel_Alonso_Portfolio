@@ -5,6 +5,7 @@
 //   SITE_URL=https://<production-host> node scripts/verify-deploy.ts
 //   EXPECTED_SHA=<commit> waits until production serves that commit before checking.
 import { readFile } from 'node:fs/promises';
+import { parseHeadersFile } from '../src/lib/headers.ts';
 
 const POLL_INTERVAL_MS = 15_000;
 let passed = 0;
@@ -40,26 +41,6 @@ async function get(path: string): Promise<Response> {
   const url = new URL(path, `${siteUrl}/`);
   url.searchParams.set('bust', Date.now().toString());
   return fetch(url, { redirect: 'manual', headers: { 'cache-control': 'no-cache' } });
-}
-
-/** Parses Cloudflare `_headers`: an unindented path line followed by indented `Name: value` lines. */
-function parseHeadersFile(text: string): Map<string, Map<string, string>> {
-  const rules = new Map<string, Map<string, string>>();
-  let current: Map<string, string> | undefined;
-  for (const line of text.split(/\r?\n/)) {
-    const trimmed = line.trim();
-    if (trimmed === '' || trimmed.startsWith('#') || trimmed.startsWith('!')) continue;
-    if (!/^\s/.test(line)) {
-      current = new Map();
-      rules.set(trimmed, current);
-      continue;
-    }
-    const colon = trimmed.indexOf(':');
-    if (current && colon > 0) {
-      current.set(trimmed.slice(0, colon).trim().toLowerCase(), trimmed.slice(colon + 1).trim());
-    }
-  }
-  return rules;
 }
 
 function checkHeaders(label: string, response: Response, expected: Map<string, string>): void {
@@ -146,7 +127,16 @@ check('Unknown route returns 404', missing.status === 404, `status ${missing.sta
 check('404 is the custom page', /<html lang="es/i.test(await missing.text()));
 checkHeaders('404', missing, pageHeaders);
 
-// 4. Hashed assets are served with immutable caching.
+// 4. On-demand (Worker) responses carry the same headers, via src/middleware.ts.
+const action = await fetch(new URL('/_actions/contact', `${siteUrl}/`), {
+  method: 'POST',
+  headers: { origin: siteUrl, 'content-type': 'application/json' },
+  body: '{}',
+});
+check('/_actions/contact is served by the Worker', action.status < 500, `status ${action.status}`);
+checkHeaders('/_actions/contact', action, pageHeaders);
+
+// 5. Hashed assets are served with immutable caching.
 const assetPath = /(\/_astro\/[^"'\s)]+\.(?:css|js|woff2))/.exec(homeHtml)?.[1];
 if (assetPath) {
   const asset = await get(assetPath);
@@ -156,7 +146,7 @@ if (assetPath) {
   check('At least one hashed asset under /_astro/', false, 'none found in / HTML');
 }
 
-// 5. Independent external grade.
+// 6. Independent external grade.
 const grade = await observatoryGrade(new URL(siteUrl).host);
 check('MDN HTTP Observatory is A+', grade === 'A+', `grade ${grade}`);
 
