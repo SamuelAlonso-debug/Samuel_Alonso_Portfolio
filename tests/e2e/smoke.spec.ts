@@ -62,7 +62,8 @@ for (const { path, lang, switchTo } of pages) {
         if (/Content.Security.Policy/i.test(message.text())) violations.push(message.text());
       });
       await page.goto(path);
-      await page.waitForLoadState('networkidle');
+      // Turnstile keeps polling on the contact page, so the idle wait is capped.
+      await page.waitForLoadState('networkidle', { timeout: 5_000 }).catch(() => {});
       expect(violations).toEqual([]);
     });
 
