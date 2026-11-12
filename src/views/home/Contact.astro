@@ -51,17 +51,25 @@ const email = 'samuelalonsodv@gmail.com';
 </script>
 
 <style>
-  /* Own ink field: the page tone switches only at the top, so --paper is still the field above. */
+  /* Own ink field: the page tone switches only at the top, so --paper is still the field above.
+     The footer takes the same field, so a fast scroll never shows the fading page tone. */
+  .contact,
+  :global(body:has(#contact) > footer) {
+    --ink: var(--ink-scene-fg);
+    --muted: var(--ink-scene-muted);
+    --line: var(--ink-scene-line);
+    --accent: var(--scene-accent);
+    background: var(--ink-scene);
+    color: var(--ink);
+  }
+  :global(body:has(#contact) > footer) {
+    margin-top: 0;
+  }
   .contact {
-    --ink: var(--ink-field-fg);
-    --muted: var(--ink-field-muted);
-    --accent: var(--action);
     position: relative;
     min-height: 100svh;
     padding: 34vh clamp(20px, 4vw, 64px) 16vh;
     overflow: clip;
-    background: var(--ink-field);
-    color: var(--ink);
   }
   /* The field above bulges into the ink. No JS or reduced motion: a straight edge. */
   .curve {

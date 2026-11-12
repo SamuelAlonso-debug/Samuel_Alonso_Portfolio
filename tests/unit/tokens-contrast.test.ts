@@ -43,14 +43,20 @@ const GRAPHIC = 3;
 
 const light = block(':root');
 const dark = { ...light, ...block(":root[data-theme='dark']") };
-/** Tone blocks point at field tokens: resolve `var(--x)` against the light block. */
-const tone = (name: string): Tokens =>
-  Object.fromEntries(
-    Object.entries({ ...light, ...block(`:root[data-tone='${name}']`) }).map(([k, v]) => [
-      k,
-      v.replace(/^var\(--([\w-]+)\)$/, (_, ref: string) => light[ref] ?? v),
-    ]),
-  );
+/** Tone blocks point at scene tokens, which point at field tokens: resolve `var(--x)` twice. */
+const tone = (name: string, base: Tokens): Tokens => {
+  let out = { ...base, ...block(`:root[data-tone='${name}']`) };
+  for (let i = 0; i < 2; i++) {
+    const prev = out;
+    out = Object.fromEntries(
+      Object.entries(prev).map(([k, v]) => [
+        k,
+        v.replace(/^var\(--([\w-]+)\)$/, (_, ref: string) => prev[ref] ?? v),
+      ]),
+    );
+  }
+  return out;
+};
 
 // [foreground, background, minimum ratio]
 const themed: [string, string, number][] = [
@@ -84,8 +90,10 @@ describe('token contrast (WCAG 2.2 AA)', () => {
   for (const [name, tokens] of [
     ['light', light],
     ['dark', dark],
-    ['ink tone', tone('ink')],
-    ['petrol tone', tone('petrol')],
+    ['light ink tone', tone('ink', light)],
+    ['light petrol tone', tone('petrol', light)],
+    ['dark ink tone', tone('ink', dark)],
+    ['dark petrol tone', tone('petrol', dark)],
   ] as const) {
     it.each(themed)(`${name}: %s on %s ≥ %d:1`, (fg, bg, min) => {
       expect(contrast(tokens, fg, bg)).toBeGreaterThanOrEqual(min);
@@ -96,8 +104,11 @@ describe('token contrast (WCAG 2.2 AA)', () => {
     expect(contrast(light, fg, bg)).toBeGreaterThanOrEqual(min);
   });
 
-  it('ink tone: the hours arc reads on the dial surface (≥3:1)', () => {
-    expect(contrast(tone('ink'), 'ink-field-hours', 'surface')).toBeGreaterThanOrEqual(GRAPHIC);
+  it.each([
+    ['light', light],
+    ['dark', dark],
+  ] as const)('%s ink tone: the hours arc reads on the dial surface (≥3:1)', (_, base) => {
+    expect(contrast(tone('ink', base), 'scene-hours', 'surface')).toBeGreaterThanOrEqual(GRAPHIC);
   });
 
   it('dark values match between the media query and the manual toggle', () => {

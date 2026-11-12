@@ -1,6 +1,6 @@
 /*
  * Design tokens, scroll story direction (v3).
- * Paper follows the theme. Ink and petrol are fixed color fields.
+ * Paper follows the theme. Ink and petrol fields are fixed; home scenes (`--*-scene`) follow the theme.
  * Amber (`--action`) marks only the primary action, one per view.
  * Status hues stay ≥15° from amber and always carry shape + label.
  * Contrast pairs: tests/unit/tokens-contrast.test.ts.
@@ -32,6 +32,21 @@
   --action: oklch(82% 0.14 75);
   --action-hover: oklch(86% 0.13 78);
   --action-ink: oklch(22% 0.03 70);
+
+  /* Home scenes follow the theme: pale fields in light, the fixed fields in dark. */
+  --ink-scene: oklch(93% 0.01 235);
+  --ink-scene-surface: oklch(97.5% 0.004 240);
+  --ink-scene-fg: oklch(20% 0.02 245);
+  --ink-scene-muted: oklch(42% 0.015 245);
+  --ink-scene-line: oklch(84% 0.012 235);
+  --petrol-scene: oklch(92% 0.025 215);
+  --petrol-scene-surface: oklch(96.5% 0.012 215);
+  --petrol-scene-fg: oklch(22% 0.03 215);
+  --petrol-scene-muted: oklch(40% 0.035 215);
+  --petrol-scene-line: oklch(82% 0.03 215);
+  --scene-accent: oklch(46% 0.085 215);
+  --scene-accent-ink: oklch(97.5% 0.004 240);
+  --scene-hours: oklch(46% 0.085 215);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -47,6 +62,19 @@
     --status-ok: oklch(72% 0.14 150);
     --status-warn: oklch(76% 0.13 55);
     --status-critical: oklch(70% 0.17 27);
+    --ink-scene: var(--ink-field);
+    --ink-scene-surface: oklch(21% 0.022 230);
+    --ink-scene-fg: var(--ink-field-fg);
+    --ink-scene-muted: var(--ink-field-muted);
+    --ink-scene-line: var(--ink-field-line);
+    --petrol-scene: var(--petrol-field);
+    --petrol-scene-surface: oklch(31% 0.06 215);
+    --petrol-scene-fg: var(--petrol-field-fg);
+    --petrol-scene-muted: var(--petrol-field-muted);
+    --petrol-scene-line: var(--petrol-field-line);
+    --scene-accent: var(--action);
+    --scene-accent-ink: var(--action-ink);
+    --scene-hours: var(--ink-field-hours);
   }
 }
 
@@ -63,33 +91,38 @@
   --status-ok: oklch(72% 0.14 150);
   --status-warn: oklch(76% 0.13 55);
   --status-critical: oklch(70% 0.17 27);
+  --ink-scene: var(--ink-field);
+  --ink-scene-surface: oklch(21% 0.022 230);
+  --ink-scene-fg: var(--ink-field-fg);
+  --ink-scene-muted: var(--ink-field-muted);
+  --ink-scene-line: var(--ink-field-line);
+  --petrol-scene: var(--petrol-field);
+  --petrol-scene-surface: oklch(31% 0.06 215);
+  --petrol-scene-fg: var(--petrol-field-fg);
+  --petrol-scene-muted: var(--petrol-field-muted);
+  --petrol-scene-line: var(--petrol-field-line);
+  --scene-accent: var(--action);
+  --scene-accent-ink: var(--action-ink);
+  --scene-hours: var(--ink-field-hours);
 }
 
 /* Field tones: the home page takes the colors of the section at mid-screen. */
 :root[data-tone='ink'] {
-  color-scheme: dark;
-  --paper: var(--ink-field);
-  --surface: oklch(21% 0.022 230);
-  --ink: var(--ink-field-fg);
-  --muted: var(--ink-field-muted);
-  --line: var(--ink-field-line);
-  --accent: var(--action);
-  --accent-ink: var(--action-ink);
-  --status-ok: oklch(72% 0.14 150);
-  --status-warn: oklch(76% 0.13 55);
-  --status-critical: oklch(70% 0.17 27);
+  --paper: var(--ink-scene);
+  --surface: var(--ink-scene-surface);
+  --ink: var(--ink-scene-fg);
+  --muted: var(--ink-scene-muted);
+  --line: var(--ink-scene-line);
+  --accent: var(--scene-accent);
+  --accent-ink: var(--scene-accent-ink);
 }
 
 :root[data-tone='petrol'] {
-  color-scheme: dark;
-  --paper: var(--petrol-field);
-  --surface: oklch(31% 0.06 215);
-  --ink: var(--petrol-field-fg);
-  --muted: var(--petrol-field-muted);
-  --line: var(--petrol-field-line);
-  --accent: var(--action);
-  --accent-ink: var(--action-ink);
-  --status-ok: oklch(72% 0.14 150);
-  --status-warn: oklch(76% 0.13 55);
-  --status-critical: oklch(70% 0.17 27);
+  --paper: var(--petrol-scene);
+  --surface: var(--petrol-scene-surface);
+  --ink: var(--petrol-scene-fg);
+  --muted: var(--petrol-scene-muted);
+  --line: var(--petrol-scene-line);
+  --accent: var(--scene-accent);
+  --accent-ink: var(--scene-accent-ink);
 }

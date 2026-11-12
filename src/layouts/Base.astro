@@ -124,7 +124,8 @@ const jsonLd = JSON.stringify({ '@context': 'https://schema.org', '@graph': grap
 
     <script is:inline set:html={THEME_INIT_SCRIPT} />
   </head>
-  <body>
+  {/* The nav CTA starts neutral: the page that passes it opens on its own primary (contact.ts updates it). */}
+  <body data-primary-visible={cta ? '' : undefined}>
     <a
       href="#content"
       class="sr-only rounded-sm bg-accent px-4 py-2 text-accent-ink focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-50"
