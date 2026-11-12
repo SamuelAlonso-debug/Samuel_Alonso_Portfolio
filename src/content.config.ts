@@ -3,7 +3,11 @@ import { glob } from 'astro/loaders';
 import { caseBaseSchema, checkCaseRules, testimonialSchema } from './content/schemas';
 
 const cases = defineCollection({
-  loader: glob({ pattern: '**/*.{md,mdx}', base: './src/content/cases' }),
+  // CASES_DIR=tests/fixtures/cases builds the track with test cases; production never sets it.
+  loader: glob({
+    pattern: '**/*.{md,mdx}',
+    base: process.env['CASES_DIR'] ?? './src/content/cases',
+  }),
   schema: ({ image }) =>
     caseBaseSchema.extend({ cover: image().optional() }).superRefine(checkCaseRules),
 });

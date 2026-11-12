@@ -2,6 +2,8 @@
  * Scroll scenes on native scroll. One rAF loop eases each pinned scene toward its
  * scroll progress and stops when settled. Reduced motion: final states, no loop.
  */
+import { panelAt, trackRun } from '../lib/track';
+
 const clamp = (v: number, min = 0, max = 1) => Math.min(max, Math.max(min, v));
 const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
 const ease = (t: number) => (t < 0.5 ? 4 * t ** 3 : 1 - (-2 * t + 2) ** 3 / 2);
@@ -133,6 +135,43 @@ if (statement) {
     update: (p) => {
       const k = clamp(p * 1.2) * words.length;
       words.forEach((w, i) => (w.style.opacity = String(lerp(0.4, 1, clamp(k - i)))));
+    },
+  });
+}
+
+// Cases: vertical scroll drives the horizontal track. ≤820 px and reduced motion: a list.
+const cases = byId('cases');
+const track = byId('track');
+if (cases && track) {
+  const panels = [...track.querySelectorAll<HTMLElement>('.panel')];
+  const media = panels.map((p) => p.querySelector<HTMLElement>('.media-inner'));
+  const count = byId('count');
+  const bar = byId('count-bar');
+  const pinned = () => !narrow.matches && !reduce.matches;
+  let shift = 0;
+  let centers: number[] = [];
+
+  scenes.push({
+    el: cases,
+    cur: 0,
+    measure: () => {
+      track.style.transform = '';
+      media.forEach((m) => m?.style.removeProperty('translate'));
+      const vw = document.documentElement.clientWidth;
+      shift = pinned() ? Math.max(0, track.scrollWidth - vw) : 0;
+      cases.style.height = pinned() ? `${trackRun(shift, innerHeight) + innerHeight}px` : '';
+      centers = panels.map((p) => p.offsetLeft + p.offsetWidth / 2 - vw / 2);
+    },
+    update: (p) => {
+      if (!pinned()) return;
+      const vw = document.documentElement.clientWidth;
+      track.style.transform = `translate3d(${-shift * p}px, 0, 0)`;
+      // Each screen drifts slightly against the track (parallax).
+      media.forEach((m, i) =>
+        m?.style.setProperty('translate', `${(((centers[i] ?? 0) - shift * p) / vw) * -9}% 0`),
+      );
+      if (count) count.textContent = String(panelAt(p, panels.length)).padStart(2, '0');
+      bar?.style.setProperty('transform', `scaleX(${p})`);
     },
   });
 }
