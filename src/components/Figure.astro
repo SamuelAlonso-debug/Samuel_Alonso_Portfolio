@@ -1,0 +1,25 @@
+---
+/** Figure or diagram in a case body: `label` names it for screen readers, the caption explains it. */
+interface Props {
+  label: string;
+}
+
+const { label } = Astro.props;
+---
+
+<figure aria-label={label}>
+  <slot />
+  <figcaption>
+    <slot name="caption" />
+  </figcaption>
+</figure>
+
+<style>
+  figure {
+    display: grid;
+    gap: 16px;
+  }
+  figcaption {
+    color: var(--muted);
+  }
+</style>

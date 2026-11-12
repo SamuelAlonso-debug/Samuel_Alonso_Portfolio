@@ -126,6 +126,12 @@
   navigation: auto;
 }
 
+/* A case's media grows from its home panel into the case page (Cases.astro names the clicked one). */
+::view-transition-group(case-media) {
+  animation-duration: 650ms;
+  animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
 @media (prefers-reduced-motion: reduce) {
   @view-transition {
     navigation: none;

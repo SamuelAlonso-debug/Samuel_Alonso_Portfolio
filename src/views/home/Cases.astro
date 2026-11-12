@@ -27,7 +27,7 @@ const pad = (n: number) => String(n).padStart(2, '0');
           <p>{t(locale, 'cases.intro')}</p>
         </div>
         {cases.map((entry, i) => (
-          <CasePanel entry={entry} index={i + 1} total={total} />
+          <CasePanel entry={entry} locale={locale} index={i + 1} total={total} />
         ))}
       </div>
       <div class="counter" aria-hidden="true">
@@ -141,3 +141,15 @@ const pad = (n: number) => String(n).padStart(2, '0');
     display: none;
   }
 </style>
+
+<script>
+  // "Read the case": the clicked panel's media becomes the case page hero (cross-document View Transition).
+  // Inline styles from JS, since CSP blocks them in markup.
+  const media = () => document.querySelectorAll<HTMLElement>('#cases .media');
+  addEventListener('pageshow', () => media().forEach((m) => (m.style.viewTransitionName = '')));
+  document.getElementById('cases')?.addEventListener('click', (e) => {
+    const link = e.target instanceof Element ? e.target.closest('.open a') : null;
+    const target = link?.closest('article')?.querySelector<HTMLElement>('.media');
+    if (target) target.style.viewTransitionName = 'case-media';
+  });
+</script>

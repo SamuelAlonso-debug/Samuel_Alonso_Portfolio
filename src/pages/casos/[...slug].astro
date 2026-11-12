@@ -1,0 +1,20 @@
+---
+import { caseRoutes, type CasePair } from '../../lib/case-pages';
+import CaseList from '../../views/CaseList.astro';
+import CasePage from '../../views/CasePage.astro';
+
+export const getStaticPaths = () => caseRoutes('es');
+
+interface Props {
+  pairs: CasePair[];
+  at: number | undefined;
+}
+
+const { pairs, at } = Astro.props;
+---
+
+{at === undefined ? (
+  <CaseList locale="es" pairs={pairs} />
+) : (
+  <CasePage locale="es" pairs={pairs} at={at} />
+)}
