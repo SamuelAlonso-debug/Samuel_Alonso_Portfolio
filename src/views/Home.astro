@@ -1,12 +1,16 @@
 ---
 import { getCollection } from 'astro:content';
-import { PUBLIC_BOOKING_URL as booking } from 'astro:env/client';
+import {
+  PUBLIC_BOOKING_URL as booking,
+  PUBLIC_TURNSTILE_SITE_KEY as siteKey,
+} from 'astro:env/client';
 import Button from '../components/Button.astro';
 import type { Locale } from '../i18n/config';
 import { routes } from '../i18n/routes';
 import { t } from '../i18n/ui';
 import Base from '../layouts/Base.astro';
 import { getCases } from '../lib/case-pages';
+import { allowTurnstile } from '../lib/contact';
 import ScreenWall from '../samples/ScreenWall.astro';
 import { sampleCopy } from '../samples/copy';
 import About from './home/About.astro';
@@ -30,6 +34,8 @@ const testimonials = (
 ).sort((a, b) => b.data.date.getTime() - a.data.date.getTime());
 // No booking link: no contact scene and no "Book a call" anywhere.
 const call = booking ? { id: 'contact', label: t(locale, 'cta.book') } : undefined;
+// The contact scene holds the form.
+if (booking && siteKey) allowTurnstile(Astro.csp);
 ---
 
 <Base
