@@ -3,11 +3,12 @@
  * Contact form, sent through the `contact` Action. Needs JS and a Turnstile site key; renders
  * nothing without the key and stays hidden without JS. `compact` (home scene): name, email and
  * message only, with an outlined button because the booking orb is the view's primary.
+ * The view must call allowTurnstile(Astro.csp).
  */
 import { PUBLIC_TURNSTILE_SITE_KEY as siteKey } from 'astro:env/client';
 import type { Locale } from '../i18n/config';
 import { routes } from '../i18n/routes';
-import { topics } from '../lib/contact';
+import { topics, turnstileOrigin } from '../lib/contact';
 
 interface Props {
   locale: Locale;
@@ -17,12 +18,6 @@ interface Props {
 
 const { locale, compact = false, class: className } = Astro.props;
 const email = 'samuelalonsodv@gmail.com';
-const turnstile = 'https://challenges.cloudflare.com';
-
-if (siteKey) {
-  Astro.csp?.insertScriptResource(turnstile);
-  Astro.csp?.insertDirective(`frame-src ${turnstile}`);
-}
 
 const copy = {
   es: {
@@ -177,7 +172,7 @@ const button = compact
     <p class="status text-lg" role="status" aria-live="polite"></p>
   </form>
 )}
-{siteKey && <script is:inline src={`${turnstile}/turnstile/v0/api.js`} async defer></script>}
+{siteKey && <script is:inline src={`${turnstileOrigin}/turnstile/v0/api.js`} async defer></script>}
 
 <script>
   import '../scripts/contact-form';

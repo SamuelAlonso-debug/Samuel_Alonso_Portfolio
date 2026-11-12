@@ -1,4 +1,5 @@
 /** Contact form: input schema and Turnstile check. Error messages are codes; the page localizes them. */
+import type { AstroGlobal } from 'astro';
 import { z } from 'astro/zod';
 
 export const topics = ['review', 'project', 'support', 'other'] as const;
@@ -29,4 +30,12 @@ export async function verifyTurnstile(token: string, secret: string, ip: string 
   if (!res.ok) return false;
   const data: { success?: boolean } = await res.json();
   return data.success === true;
+}
+
+export const turnstileOrigin = 'https://challenges.cloudflare.com';
+
+/** Allows Turnstile in the page CSP. Call it in the view frontmatter: a nested component runs after the head is sent. */
+export function allowTurnstile(csp: AstroGlobal['csp']) {
+  csp?.insertScriptResource(turnstileOrigin);
+  csp?.insertDirective(`frame-src ${turnstileOrigin}`);
 }

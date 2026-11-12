@@ -3,12 +3,16 @@
  * Contact page. The form needs JS (the Action runs in the Worker; the page is static) and a
  * Turnstile site key; without either, the email and booking link are still visible.
  */
-import { PUBLIC_BOOKING_URL as booking } from 'astro:env/client';
+import {
+  PUBLIC_BOOKING_URL as booking,
+  PUBLIC_TURNSTILE_SITE_KEY as siteKey,
+} from 'astro:env/client';
 import ContactForm from '../components/ContactForm.astro';
 import type { Locale } from '../i18n/config';
 import { routes } from '../i18n/routes';
 import { t } from '../i18n/ui';
 import Base from '../layouts/Base.astro';
+import { allowTurnstile } from '../lib/contact';
 
 interface Props {
   locale: Locale;
@@ -16,6 +20,7 @@ interface Props {
 
 const { locale } = Astro.props;
 const email = 'samuelalonsodv@gmail.com';
+if (siteKey) allowTurnstile(Astro.csp);
 
 const copy = {
   es: {
