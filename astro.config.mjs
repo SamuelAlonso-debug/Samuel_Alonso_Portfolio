@@ -66,6 +66,9 @@ export default defineConfig({
     }),
   ],
 
+  // Internal pages load on hover or focus, so a click opens them at once.
+  prefetch: { prefetchAll: true, defaultStrategy: 'hover' },
+
   // Shiki uses inline styles that Astro's CSP blocks; Prism uses classes.
   markdown: { syntaxHighlight: 'prism' },
 
