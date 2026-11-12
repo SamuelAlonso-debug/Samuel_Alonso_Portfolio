@@ -87,6 +87,9 @@
 
   body {
     min-height: 100dvh;
+    transition:
+      background-color 700ms var(--ease-scene),
+      color 700ms var(--ease-scene);
     background-color: var(--paper);
     color: var(--ink);
     font-size: var(--text-base);
