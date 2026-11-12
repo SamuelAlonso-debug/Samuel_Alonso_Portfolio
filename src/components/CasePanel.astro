@@ -75,7 +75,8 @@ const pad = (n: number) => String(n).padStart(2, '0');
   .media {
     position: relative;
     height: 100%;
-    /* clip-path, not overflow + radius: a composited child can escape a radius clip. */
+    /* overflow clips the layout; clip-path keeps the corners round on composited children. */
+    overflow: clip;
     clip-path: inset(0 round var(--radius-xl));
     border-radius: var(--radius-xl);
     outline: 1px solid oklch(0% 0 0 / 0.06);
