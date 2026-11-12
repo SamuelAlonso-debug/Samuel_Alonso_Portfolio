@@ -35,6 +35,14 @@ export default defineConfig({
         url: true,
         startsWith: 'https://',
       }),
+      // Cloudflare Web Analytics token (public). Set only for production builds: the beacon's
+      // endpoint rejects other origins, so local and CI builds ship without it.
+      PUBLIC_CF_BEACON_TOKEN: envField.string({
+        context: 'client',
+        access: 'public',
+        optional: true,
+        length: 32,
+      }),
     },
   },
 
