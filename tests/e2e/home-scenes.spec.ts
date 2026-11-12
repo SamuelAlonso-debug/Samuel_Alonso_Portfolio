@@ -70,6 +70,16 @@ test('header links reach their scene; the menu sheet closes on navigation', asyn
   await expect(page).toHaveURL(/#how$/);
 });
 
+test('testimonials: nav link only with the scene, active while in view', async ({ page }) => {
+  await page.goto('/');
+  const link = page.locator('[data-section-link][href="#testimonials"]');
+  const scene = page.locator('#testimonials');
+  await expect(link).toHaveCount(await scene.count());
+  if ((await scene.count()) === 0) return;
+  await scene.evaluate((s) => scrollTo(0, scrollY + s.getBoundingClientRect().top));
+  if (await link.isVisible()) await expect(link).toHaveAttribute('aria-current', 'location');
+});
+
 test('no empty case track: the scene exists only with cases', async ({ page }) => {
   await page.goto('/');
   const scene = await page.locator('#cases').count();
