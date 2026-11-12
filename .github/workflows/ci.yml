@@ -47,8 +47,16 @@ jobs:
       - name: Unit test for the deploy build request
         run: node --test scripts/request-build.test.ts
 
+      # Turnstile test secret (always passes) and a log-only email sink: no real mail. The build
+      # copies .dev.vars into dist/server, where the E2E preview reads it.
+      - name: Worker vars for the contact form
+        run: printf 'TURNSTILE_SECRET_KEY=1x0000000000000000000000000000000AA\nEMAIL_SINK=log\n' > .dev.vars
+
       - name: Build
         run: pnpm build
+        # Turnstile test key: always passes, so the E2E can send the form.
+        env:
+          PUBLIC_TURNSTILE_SITE_KEY: 1x00000000000000000000AA
 
       - name: JS and page-weight budgets
         run: node --test scripts/budgets.test.ts && node scripts/budgets.ts

@@ -4,6 +4,7 @@
  * "Book a call" orb and Querétaro time (contact.ts). Rendered only with a booking link.
  */
 import type { Locale } from '../../i18n/config';
+import { routes } from '../../i18n/routes';
 import { t } from '../../i18n/ui';
 import { sampleCopy } from '../../samples/copy';
 
@@ -30,6 +31,9 @@ const { locale, booking } = Astro.props;
       <span>{t(locale, 'cta.book')}</span>
     </a>
     <p class="clock" data-text={t(locale, 'contact.clock')}></p>
+    <a class="write" href={routes.contact[locale]}>
+      {t(locale, 'contact.write')}
+    </a>
   </div>
 </section>
 
@@ -112,6 +116,10 @@ const { locale, booking } = Astro.props;
     .orb:hover {
       background: var(--action-hover);
     }
+  }
+  .write {
+    font-size: 1.125rem;
+    text-decoration: underline;
   }
   .clock {
     font-size: 0.95rem;

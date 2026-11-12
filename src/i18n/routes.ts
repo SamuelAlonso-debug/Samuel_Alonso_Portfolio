@@ -12,4 +12,5 @@ export const routes = {
   cases: { es: '/casos/', en: '/en/work/' },
   howItsMade: { es: '/como-esta-hecho/', en: '/en/how-its-made/' },
   privacy: { es: '/aviso-de-privacidad/', en: '/en/privacy/' },
+  contact: { es: '/contacto/', en: '/en/contact/' },
 } as const satisfies Record<string, Paths>;

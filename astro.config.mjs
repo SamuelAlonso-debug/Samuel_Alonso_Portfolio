@@ -35,6 +35,12 @@ export default defineConfig({
         url: true,
         startsWith: 'https://',
       }),
+      // Turnstile site key (public). Unset: the contact page shows only the email and booking link.
+      PUBLIC_TURNSTILE_SITE_KEY: envField.string({
+        context: 'client',
+        access: 'public',
+        optional: true,
+      }),
       // Cloudflare Web Analytics token (public). Set only for production builds: the beacon's
       // endpoint rejects other origins, so local and CI builds ship without it.
       PUBLIC_CF_BEACON_TOKEN: envField.string({
