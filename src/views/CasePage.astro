@@ -1,0 +1,223 @@
+﻿---
+/** One case: media, facts, body, evidence, lessons and the next case. */
+import { Image } from 'astro:assets';
+import { render } from 'astro:content';
+import EvidenceList from '../components/EvidenceList.astro';
+import ProductScreen from '../components/ProductScreen.astro';
+import { surfaceOf } from '../components/case-style';
+import { htmlLang, type Locale } from '../i18n/config';
+import { routes } from '../i18n/routes';
+import { t } from '../i18n/ui';
+import Base from '../layouts/Base.astro';
+import { caseHref, casePaths, type CasePair } from '../lib/case-pages';
+
+interface Props {
+  locale: Locale;
+  pairs: CasePair[];
+  at: number;
+}
+
+const { locale, pairs, at } = Astro.props;
+const pair = pairs[at];
+if (!pair) throw new Error(`No case at position ${at}.`);
+const entry = pair[locale];
+const { title, summary, role, team, period, stack, cover, evidence, lessons } = entry.data;
+const { Content } = await render(entry);
+const next = pairs.length > 1 ? pairs[(at + 1) % pairs.length]?.[locale] : undefined;
+
+const month = new Intl.DateTimeFormat(htmlLang[locale], {
+  month: 'short',
+  year: 'numeric',
+  timeZone: 'UTC',
+});
+const when = period.end
+  ? month.formatRange(period.start, period.end)
+  : t(locale, 'case.since').replace('{date}', month.format(period.start));
+const facts = [
+  [t(locale, 'case.role'), role],
+  ...(team ? [[t(locale, 'case.team'), team]] : []),
+  [t(locale, 'case.period'), when],
+  [t(locale, 'case.stack'), stack.join(', ')],
+];
+---
+
+<Base
+  locale={locale}
+  paths={casePaths(pair)}
+  title={`${title} Â· Samuel Alonso`}
+  description={summary}
+>
+  <article class="case-page">
+    <a class="back" href={`${routes.home[locale]}#cases`}>
+      <span aria-hidden="true">â†</span>
+      {t(locale, 'case.back')}
+    </a>
+    <div class="media" data-surface={surfaceOf(at)}>
+      {cover && (
+        <ProductScreen>
+          <Image
+            src={cover}
+            alt=""
+            widths={[480, 800, 1200]}
+            sizes="(max-width: 820px) 90vw, 38rem"
+          />
+        </ProductScreen>
+      )}
+    </div>
+    <h1>{title}</h1>
+    <p class="result">{summary}</p>
+    <dl class="facts">
+      {facts.map(([term, value]) => (
+        <div>
+          <dt>{term}</dt>
+          <dd>{value}</dd>
+        </div>
+      ))}
+    </dl>
+    {entry.data.anonymizationNote && <p class="note">{entry.data.anonymizationNote}</p>}
+    <div class="body">
+      <div class="prose">
+        <Content />
+      </div>
+      <section aria-labelledby="evidence">
+        <h2 id="evidence">{t(locale, 'case.evidence')}</h2>
+        <div>
+          <EvidenceList evidence={evidence} locale={locale} />
+        </div>
+      </section>
+      <section aria-labelledby="lessons">
+        <h2 id="lessons">{t(locale, 'case.lessons')}</h2>
+        <p>{lessons}</p>
+      </section>
+    </div>
+    {next && (
+      <nav class="next" aria-labelledby="next">
+        <p id="next">{t(locale, 'case.next')}</p>
+        <a href={caseHref(next)}>{next.data.title}</a>
+      </nav>
+    )}
+  </article>
+</Base>
+
+<style>
+  .case-page {
+    padding: 110px clamp(20px, 4vw, 64px) 0;
+  }
+  .back {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 44px;
+    font-weight: 600;
+  }
+  .media {
+    display: grid;
+    place-items: center;
+    height: min(62vh, 110vw);
+    margin-top: 24px;
+    padding: 0 12%;
+    overflow: hidden;
+    border-radius: var(--radius-xl);
+    view-transition-name: case-media;
+  }
+  .media > :global(*) {
+    width: 100%;
+    max-width: 38rem;
+  }
+  .media :global(img) {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+  .media[data-surface='petrol'] {
+    background: var(--petrol-field);
+  }
+  .media[data-surface='mist'] {
+    background: var(--mist);
+  }
+  .media[data-surface='ink'] {
+    background: var(--ink-field);
+  }
+  h1 {
+    max-width: 16ch;
+    margin-top: 56px;
+    font-size: clamp(2.4rem, 1.2rem + 4vw, 5.5rem);
+    line-height: 0.95;
+    font-weight: 700;
+    letter-spacing: -0.035em;
+  }
+  .result {
+    max-width: 40ch;
+    margin-top: 20px;
+    font-size: 1.375rem;
+    color: var(--muted);
+  }
+  .facts {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+    gap: 20px 32px;
+    max-width: 64rem;
+    margin-top: 48px;
+  }
+  dt {
+    font-size: 0.875rem;
+    color: var(--muted);
+  }
+  dd {
+    margin-top: 4px;
+    font-size: 1.05rem;
+    font-weight: 500;
+  }
+  .note {
+    max-width: 62ch;
+    margin-top: 24px;
+    color: var(--muted);
+  }
+  .body {
+    display: grid;
+    gap: 12vh;
+    max-width: 72rem;
+    margin-top: 14vh;
+  }
+  .prose:empty {
+    display: none;
+  }
+  section {
+    display: grid;
+    gap: 18px 4vw;
+  }
+  @media (min-width: 1000px) {
+    section {
+      grid-template-columns: 18rem minmax(0, 1fr);
+    }
+  }
+  h2 {
+    font-size: clamp(1.6rem, 1.1rem + 1.4vw, 2.4rem);
+    line-height: 1.05;
+    font-weight: 650;
+    letter-spacing: -0.03em;
+  }
+  section > p,
+  .prose :global(p) {
+    max-width: 62ch;
+    font-size: 1.125rem;
+    line-height: 1.6;
+  }
+  .next {
+    margin-top: 16vh;
+    padding: 10vh 0 14vh;
+    border-top: 1px solid var(--line);
+  }
+  .next p {
+    color: var(--muted);
+  }
+  .next a {
+    display: block;
+    max-width: 18ch;
+    margin-top: 10px;
+    font-size: clamp(2rem, 1rem + 3.4vw, 4.4rem);
+    line-height: 1;
+    font-weight: 700;
+    letter-spacing: -0.035em;
+  }
+</style>

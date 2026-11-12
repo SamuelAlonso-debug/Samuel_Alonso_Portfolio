@@ -1,0 +1,94 @@
+---
+/**
+ * A case's evidence, one renderer per kind: links (demo, repo, video, artifact),
+ * metrics with their method, and testimonials as quotes.
+ */
+import { getEntry, type CollectionEntry } from 'astro:content';
+import type { Locale } from '../i18n/config';
+import { icons } from './case-style';
+import Quote from './Quote.astro';
+
+interface Props {
+  evidence: CollectionEntry<'cases'>['data']['evidence'];
+  locale: Locale;
+}
+
+const { evidence, locale } = Astro.props;
+const items = evidence.filter((e) => e.kind !== 'testimonial');
+const quotes = await Promise.all(
+  evidence
+    .filter((e) => e.kind === 'testimonial')
+    .map(async ({ testimonial }) => {
+      const id = `${locale}/${testimonial}`;
+      const entry = await getEntry('testimonials', id);
+      if (!entry) throw new Error(`Evidence points to a missing testimonial "${id}".`);
+      return entry;
+    }),
+);
+---
+
+{items.length > 0 && (
+  <ul class="evidence">
+    {items.map((e) => {
+      const detail = e.kind === 'metric' ? e.method : e.url && new URL(e.url).host;
+      const Tag = e.url ? 'a' : 'div';
+      return (
+        <li>
+          <Tag class="item" href={e.url}>
+            <svg viewBox="0 0 16 16" aria-hidden="true" set:html={icons[e.kind]} />
+            <span>
+              <b>{e.label}</b>
+              {detail && <span class="detail">{detail}</span>}
+            </span>
+          </Tag>
+        </li>
+      );
+    })}
+  </ul>
+)}
+{quotes.map((entry) => (
+  <div class="quote">
+    <Quote entry={entry} locale={locale} />
+  </div>
+))}
+
+<style>
+  .item {
+    display: grid;
+    grid-template-columns: 22px 1fr;
+    gap: 16px;
+    align-items: center;
+    padding: 20px 0;
+    border-top: 1px solid var(--line);
+    text-decoration: none;
+  }
+  li:last-child .item {
+    border-bottom: 1px solid var(--line);
+  }
+  a.item b {
+    text-decoration-line: underline;
+    text-decoration-color: color-mix(in oklch, currentColor 40%, transparent);
+  }
+  svg {
+    width: 22px;
+    height: 22px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  b {
+    display: block;
+    font-size: 1.2rem;
+    font-weight: 600;
+  }
+  .detail {
+    color: var(--muted);
+    font-size: 0.95rem;
+    overflow-wrap: anywhere;
+  }
+  .quote {
+    margin-top: 48px;
+  }
+</style>

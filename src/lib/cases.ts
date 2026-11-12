@@ -13,6 +13,11 @@ export function localeOf(id: string): Locale {
   return locale;
 }
 
+/** Page slug of an entry id: `es/my-case` → `my-case`. */
+export function slugOf(id: string): string {
+  return id.slice(localeOf(id).length + 1);
+}
+
 /** ES ↔ EN pairs by translationKey. A case without its translation fails the build. */
 export function pairCases<T extends CaseLike>(entries: T[]): Record<Locale, T>[] {
   const pairs = new Map<string, Partial<Record<Locale, T>>>();
