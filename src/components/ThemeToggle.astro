@@ -51,8 +51,11 @@ const { locale } = Astro.props;
 
   function applyMode(mode: Mode): void {
     const root = document.documentElement;
+    // Inherited color transitions would repaint the whole page every frame for 700 ms.
+    root.dataset['themeSwitching'] = '';
     if (mode === 'system') delete root.dataset['theme'];
     else root.dataset['theme'] = mode;
+    requestAnimationFrame(() => requestAnimationFrame(() => delete root.dataset['themeSwitching']));
 
     try {
       if (mode === 'system') localStorage.removeItem(KEY);
