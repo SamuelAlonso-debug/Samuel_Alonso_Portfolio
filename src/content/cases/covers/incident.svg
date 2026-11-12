@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" font-family="system-ui, sans-serif">
+  <rect width="800" height="500" rx="12" fill="#f6f8fa"/>
+  <text x="32" y="52" font-size="24" font-weight="700" fill="#14202b">Postmortem · checkout</text>
+  <text x="32" y="82" font-size="16" fill="#5b6b78">Errores 5xx por minuto</text>
+  <path d="M32 380H768" stroke="#dde3e8"/>
+  <rect x="300" y="110" width="170" height="270" fill="#c8402f" opacity=".08"/>
+  <path d="M32 370l60-2 60 3 60-4 60 2 40-150 30-80 40 30 30 60 40 110 60 8 60-3 60 2 60-1 70 1" fill="none" stroke="#c8402f" stroke-width="3"/>
+  <g font-size="16" fill="#14202b">
+    <text x="308" y="134">Rollback: 18 min</text>
+    <text x="32" y="420">21:04 alerta</text><text x="300" y="420">21:09 rollback</text><text x="560" y="420">21:22 estable</text>
+  </g>
+</svg>
