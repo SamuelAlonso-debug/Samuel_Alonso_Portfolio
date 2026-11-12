@@ -7,9 +7,11 @@ interface Props {
   lang?: string;
   hreflang?: string;
   rel?: string;
+  /** Hook for page scripts and styles (e.g. `magnetic`). */
+  class?: string;
 }
 
-const { href, variant = 'secondary', size = 'md', ...attrs } = Astro.props;
+const { href, variant = 'secondary', size = 'md', class: hook, ...attrs } = Astro.props;
 
 const classes = [
   'inline-flex items-center justify-center gap-2.5 rounded-full font-semibold no-underline',
@@ -20,6 +22,7 @@ const classes = [
     secondary: 'border border-current/45 hover:bg-current/8',
     ghost: 'bg-current/10 hover:bg-current/16',
   }[variant],
+  hook,
 ];
 ---
 

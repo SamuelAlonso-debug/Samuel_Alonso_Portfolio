@@ -2,6 +2,7 @@
 import type { Locale } from '../i18n/config';
 import { pathFor, type RouteKey } from '../i18n/routes';
 import { t } from '../i18n/ui';
+import Button from './Button.astro';
 import LangSwitch from './LangSwitch.astro';
 import ThemeToggle from './ThemeToggle.astro';
 
@@ -15,9 +16,11 @@ interface Props {
   routeKey?: RouteKey | undefined;
   /** In-page sections: links on desktop, a menu sheet at ≤820 px. */
   sections?: Section[] | undefined;
+  /** Primary action, desktop only. Neutral while another primary action is on screen. */
+  cta?: Section | undefined;
 }
 
-const { locale, routeKey, sections = [] } = Astro.props;
+const { locale, routeKey, sections = [], cta } = Astro.props;
 const menu = sections.length > 0;
 ---
 
@@ -45,6 +48,16 @@ const menu = sections.length > 0;
       </span>
     )}
     <ThemeToggle locale={locale} />
+    {cta && (
+      <Button
+        href={`#${cta.id}`}
+        variant="primary"
+        size="sm"
+        class="nav-cta ml-2 max-[820px]:hidden"
+      >
+        {cta.label}
+      </Button>
+    )}
     {menu && (
       <button
         type="button"
@@ -100,6 +113,16 @@ const menu = sections.length > 0;
 </script>
 
 <style>
+  /* One amber action per view (contact.ts sets the attribute). */
+  :global(body[data-primary-visible] .nav-cta) {
+    background: color-mix(in oklch, var(--ink) 10%, transparent);
+    color: var(--ink);
+  }
+  @media (hover: hover) and (pointer: fine) {
+    :global(body[data-primary-visible] .nav-cta:hover) {
+      background: color-mix(in oklch, var(--ink) 16%, transparent);
+    }
+  }
   .links {
     display: none;
     gap: 2px;

@@ -9,6 +9,7 @@ interface SampleCopy {
   statement: string;
   about: { bio: string; facts: [term: string, detail: string][] };
   howIWork: [title: string, detail: string, duration: string][];
+  contact: string;
 }
 
 export const sampleCopy: Record<Locale, SampleCopy> = {
@@ -42,6 +43,7 @@ export const sampleCopy: Record<Locale, SampleCopy> = {
         'Mes a mes',
       ],
     ],
+    contact: 'Una llamada de 30 minutos para entender qué necesitas y decirte si puedo ayudarte.',
   },
   en: {
     headline: "Systems for small businesses that can't stop, with results you can check.",
@@ -73,5 +75,6 @@ export const sampleCopy: Record<Locale, SampleCopy> = {
         'Month to month',
       ],
     ],
+    contact: 'A 30-minute call to understand what you need and tell you whether I can help.',
   },
 };

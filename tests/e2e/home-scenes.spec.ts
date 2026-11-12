@@ -97,6 +97,39 @@ test('no empty testimonials scene; one quote at a time while pinned', async ({ p
   await expect(linked).toHaveCSS('opacity', '1');
 });
 
+test('contact only with a booking link; one amber action per view', async ({ page }) => {
+  await page.goto('/');
+  const contact = page.locator('#contact');
+  const booking = (await contact.count()) > 0;
+  // Nav link, nav CTA, menu sheet link and hero CTA.
+  await expect(page.locator('a[href="#contact"]')).toHaveCount(booking ? 4 : 0);
+  if (!booking) return;
+  await expect(contact.locator('.orb')).toHaveAttribute('href', /^https:\/\//);
+  await expect(contact.locator('.clock')).toHaveText(/Querétaro son las \d\d:\d\d/);
+  const body = page.locator('body');
+  await expect(body).toHaveAttribute('data-primary-visible', '');
+  const place = (id: string, at: number) =>
+    page
+      .locator(`#${id}`)
+      .evaluate(
+        (s, at) => scrollTo(0, scrollY + s.getBoundingClientRect().top - innerHeight * at),
+        at,
+      );
+  await place('about', 0);
+  await expect(body).not.toHaveAttribute('data-primary-visible');
+  // The curve flattens as the ink field rises; the field takes the page tone only at the top.
+  await place('contact', 0.45);
+  await expect(contact.locator('.curve')).toHaveCSS('transform', /^matrix\(1, 0, 0, 0\.(49|5)/);
+  await expect(page.locator('html')).not.toHaveAttribute('data-tone', 'ink');
+  await place('contact', 0);
+  await expect(page.locator('html')).toHaveAttribute('data-tone', 'ink');
+  await expect(body).toHaveAttribute('data-primary-visible', '');
+  await expect(page.locator('[data-section-link][href="#contact"]')).toHaveAttribute(
+    'aria-current',
+    'location',
+  );
+});
+
 test('reduced motion: no pinning, statement fully lit', async ({ page }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.goto('/');
@@ -106,4 +139,5 @@ test('reduced motion: no pinning, statement fully lit', async ({ page }) => {
   for (const quote of await page.locator('#testimonials .quote').all()) {
     await expect(quote).toHaveCSS('opacity', '1');
   }
+  for (const curve of await page.locator('#contact .curve').all()) await expect(curve).toBeHidden();
 });
