@@ -118,4 +118,6 @@ export const testimonialSchema = z.object({
     date: z.coerce.date(),
     channel: z.string().min(3),
   }),
+  /** Placeholder text: the quote shows a visible "sample" mark. */
+  demo: z.boolean().default(false),
 });
