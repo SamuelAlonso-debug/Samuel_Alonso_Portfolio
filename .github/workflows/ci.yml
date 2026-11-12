@@ -44,6 +44,9 @@ jobs:
       - name: Unit tests (evidence schema, i18n parity)
         run: pnpm test
 
+      - name: Unit test for the deploy build request
+        run: node --test scripts/request-build.test.ts
+
       - name: Build
         run: pnpm build
 
