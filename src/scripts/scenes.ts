@@ -212,16 +212,28 @@ if (voices && quoteBox && quotes.length > 1) {
   });
 }
 
+// Contact: the curve over the ink field flattens as the field rises (CSS hides it with
+// reduced motion).
+const curve = document.querySelector<HTMLElement>('#contact .curve');
+function updateCurve() {
+  const top = curve?.parentElement?.getBoundingClientRect().top;
+  if (curve && top !== undefined)
+    curve.style.transform = `scaleY(${clamp(top / (innerHeight * 0.9))})`;
+}
+
 // Page tone and the current header link follow the scene at mid-screen.
 const toned = [...document.querySelectorAll<HTMLElement>('main [data-tone]')];
 const sectionLinks = [...document.querySelectorAll<HTMLAnchorElement>('[data-section-link]')];
 let currentId: string | undefined;
 function updateTone() {
   const mid = innerHeight / 2;
-  const hit = toned.find((s) => {
+  const i = toned.findIndex((s) => {
     const r = s.getBoundingClientRect();
     return r.top <= mid && r.bottom > mid;
   });
+  let hit = toned[i];
+  // data-tone-at="top" (contact): the scene takes over once its top reaches the screen top.
+  if (hit?.dataset['toneAt'] === 'top' && hit.getBoundingClientRect().top > 1) hit = toned[i - 1];
   if (hit?.dataset['tone'] && document.documentElement.dataset['tone'] !== hit.dataset['tone']) {
     document.documentElement.dataset['tone'] = hit.dataset['tone'];
   }
@@ -243,6 +255,7 @@ function frame() {
     else moving = true;
     s.update(s.cur);
   }
+  updateCurve();
   updateTone();
   running = moving;
   if (moving) requestAnimationFrame(frame);
@@ -262,6 +275,7 @@ function layout() {
     s.cur = reduce.matches ? 1 : progress(s.el);
     s.update(s.cur);
   }
+  updateCurve();
   updateTone();
 }
 

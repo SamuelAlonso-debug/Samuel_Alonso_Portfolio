@@ -1,5 +1,5 @@
 // @ts-check
-import { defineConfig, fontProviders } from 'astro/config';
+import { defineConfig, envField, fontProviders } from 'astro/config';
 import cloudflare from '@astrojs/cloudflare';
 import mdx from '@astrojs/mdx';
 import sitemap from '@astrojs/sitemap';
@@ -23,6 +23,19 @@ export default defineConfig({
   adapter: cloudflare({ imageService: 'compile' }),
   // No sessions: avoids provisioning an unused KV namespace.
   session: false,
+
+  // Booking link behind "Book a call". Unset: no contact scene, no call buttons, no nav link.
+  env: {
+    schema: {
+      PUBLIC_BOOKING_URL: envField.string({
+        context: 'client',
+        access: 'public',
+        optional: true,
+        url: true,
+        startsWith: 'https://',
+      }),
+    },
+  },
 
   i18n: {
     locales: ['es', 'en'],

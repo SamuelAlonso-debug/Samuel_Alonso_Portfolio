@@ -1,0 +1,125 @@
+---
+/**
+ * Contact scene: the ink field rises with a curve that flattens (scenes.ts), the magnetic
+ * "Book a call" orb and Querétaro time (contact.ts). Rendered only with a booking link.
+ */
+import type { Locale } from '../../i18n/config';
+import { t } from '../../i18n/ui';
+import { sampleCopy } from '../../samples/copy';
+
+interface Props {
+  locale: Locale;
+  booking: string;
+}
+
+const { locale, booking } = Astro.props;
+---
+
+<section
+  id="contact"
+  class="contact"
+  data-tone="ink"
+  data-tone-at="top"
+  aria-labelledby="contact-title"
+>
+  <div class="curve" aria-hidden="true"></div>
+  <h2 id="contact-title">{t(locale, 'contact.title')}</h2>
+  <p class="lead">{sampleCopy[locale].contact}</p>
+  <div class="row">
+    <a class="orb magnetic" href={booking}>
+      <span>{t(locale, 'cta.book')}</span>
+    </a>
+    <p class="clock" data-text={t(locale, 'contact.clock')}></p>
+  </div>
+</section>
+
+<script>
+  import '../../scripts/contact';
+</script>
+
+<style>
+  /* Own ink field: the page tone switches only at the top, so --paper is still the field above. */
+  .contact {
+    --ink: var(--ink-field-fg);
+    --muted: var(--ink-field-muted);
+    --accent: var(--action);
+    position: relative;
+    min-height: 100svh;
+    padding: 34vh clamp(20px, 4vw, 64px) 16vh;
+    overflow: clip;
+    background: var(--ink-field);
+    color: var(--ink);
+  }
+  /* The field above bulges into the ink. No JS or reduced motion: a straight edge. */
+  .curve {
+    display: none;
+    position: absolute;
+    top: -1px;
+    right: -10vw;
+    left: -10vw;
+    height: 22vh;
+    border-radius: 0 0 50% 50%;
+    background: var(--paper);
+    transform-origin: 50% 0;
+    will-change: transform;
+  }
+  :global(html.js) .curve {
+    display: block;
+  }
+  h2 {
+    max-width: 11ch;
+    font-size: clamp(2.8rem, 1.2rem + 6vw, 7.5rem);
+    line-height: 0.94;
+    font-weight: 700;
+    letter-spacing: -0.035em;
+  }
+  .lead {
+    max-width: 32ch;
+    margin-top: 24px;
+    font-size: 1.25rem;
+    line-height: 1.45;
+    color: var(--muted);
+  }
+  .row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 32px 40px;
+    margin-top: 48px;
+  }
+  .orb {
+    display: grid;
+    place-items: center;
+    width: 176px;
+    height: 176px;
+    padding: 24px;
+    border-radius: 50%;
+    background: var(--action);
+    color: var(--action-ink);
+    font-size: 1.125rem;
+    font-weight: 700;
+    line-height: 1.15;
+    text-align: center;
+    text-decoration: none;
+    transition:
+      scale 150ms ease-out,
+      background-color 150ms ease-out;
+  }
+  .orb:active {
+    scale: 0.96;
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .orb:hover {
+      background: var(--action-hover);
+    }
+  }
+  .clock {
+    font-size: 0.95rem;
+    color: var(--muted);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    :global(html.js) .curve {
+      display: none;
+    }
+  }
+</style>

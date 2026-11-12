@@ -21,9 +21,11 @@ interface Props {
   tone?: 'ink' | 'petrol' | undefined;
   /** In-page sections linked from the header. */
   sections?: Section[] | undefined;
+  /** Primary action in the header. */
+  cta?: Section | undefined;
 }
 
-const { locale, title, description, routeKey, noindex = false, tone, sections } = Astro.props;
+const { locale, title, description, routeKey, noindex = false, tone, sections, cta } = Astro.props;
 
 const canonical = routeKey ? new URL(pathFor(routeKey, locale), Astro.site).href : undefined;
 const alternates = routeKey
@@ -73,7 +75,7 @@ const xDefault = routeKey ? new URL(pathFor(routeKey, 'es'), Astro.site).href : 
     >
       {t(locale, 'a11y.skip')}
     </a>
-    <SiteHeader locale={locale} routeKey={routeKey} sections={sections} />
+    <SiteHeader locale={locale} routeKey={routeKey} sections={sections} cta={cta} />
     <main id="content" tabindex="-1" class="focus:outline-none">
       <slot />
     </main>

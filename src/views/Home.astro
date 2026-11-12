@@ -1,5 +1,7 @@
 ---
 import { getCollection } from 'astro:content';
+import { PUBLIC_BOOKING_URL as booking } from 'astro:env/client';
+import Button from '../components/Button.astro';
 import type { Locale } from '../i18n/config';
 import { t } from '../i18n/ui';
 import Base from '../layouts/Base.astro';
@@ -7,6 +9,7 @@ import ScreenWall from '../samples/ScreenWall.astro';
 import { sampleCopy } from '../samples/copy';
 import About from './home/About.astro';
 import Cases from './home/Cases.astro';
+import Contact from './home/Contact.astro';
 import HowIWork from './home/HowIWork.astro';
 import Testimonials from './home/Testimonials.astro';
 
@@ -30,6 +33,8 @@ const hasCases = cases.length > 0;
 const testimonials = (
   await getCollection('testimonials', ({ id }) => id.startsWith(`${locale}/`))
 ).sort((a, b) => b.data.date.getTime() - a.data.date.getTime());
+// No booking link: no contact scene and no "Book a call" anywhere.
+const call = booking ? { id: 'contact', label: t(locale, 'cta.book') } : undefined;
 ---
 
 <Base
@@ -42,7 +47,9 @@ const testimonials = (
     ...(hasCases ? [{ id: 'cases', label: t(locale, 'cases.title') }] : []),
     { id: 'about', label: t(locale, 'nav.about') },
     { id: 'how', label: t(locale, 'how.title') },
+    ...(call ? [{ id: 'contact', label: t(locale, 'nav.contact') }] : []),
   ]}
+  cta={call}
 >
   <section id="hero" class="hero" data-scene data-tone="ink" aria-labelledby="hero-name">
     <div class="stage">
@@ -56,11 +63,18 @@ const testimonials = (
       <div id="hero-copy" class="copy">
         <p class="font-medium text-muted">{t(locale, 'home.role')}</p>
         <p class="headline">{copy.headline}</p>
-        {hasCases && (
+        {(call || hasCases) && (
           <p class="actions">
-            <a class="text-link" href="#cases">
-              {t(locale, 'hero.cases')}
-            </a>
+            {call && (
+              <Button href="#contact" variant="primary" class="magnetic">
+                <span>{call.label}</span>
+              </Button>
+            )}
+            {hasCases && (
+              <a class="text-link" href="#cases">
+                {t(locale, 'hero.cases')}
+              </a>
+            )}
           </p>
         )}
       </div>
@@ -97,6 +111,7 @@ const testimonials = (
   <About locale={locale} />
   <HowIWork locale={locale} />
   <Testimonials locale={locale} testimonials={testimonials} />
+  {booking && <Contact locale={locale} booking={booking} />}
 </Base>
 
 <script>
@@ -177,6 +192,10 @@ const testimonials = (
     text-wrap: balance;
   }
   .actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 22px;
     margin-top: 24px;
   }
   .text-link {
