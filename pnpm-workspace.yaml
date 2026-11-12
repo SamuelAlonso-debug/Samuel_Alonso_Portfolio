@@ -26,9 +26,6 @@ auditConfig:
     # basic-ftp <=6.2.0 (DoS on FTP listing parse) via @lhci/cli 0.16 -> proxy-agent. CI never uses FTP.
     # The fix needs basic-ftp 6.x, which breaks get-uri 5.x. Still open 2026-11-12. Review: 2027-05-01.
     - GHSA-c475-qrg2-pj4r
-    # minimatch <11.0.1 (DoS on crafted glob patterns) via eslint 10.14. All patterns are ours.
-    # The fix needs minimatch 11, not yet adopted by ESLint. Still open 2026-11-12. Review: 2027-05-01.
-    - GHSA-g3hv-75wg-m249
 
 # Install scripts are blocked except for this allowlist.
 # (`onlyBuiltDependencies` is silently ignored since pnpm 11; the current key is `allowBuilds`.)
@@ -36,3 +33,7 @@ strictDepBuilds: true
 allowBuilds:
   esbuild: true # validates the bundler's native binary
   workerd: true # Cloudflare Workers runtime for dev/preview
+
+# minimatch <11.0.1 (GHSA-g3hv-75wg-m249, DoS on crafted globs) via eslint 10.14. Same API in 11.
+overrides:
+  'minimatch@>=10 <11.0.1': '^11.0.4'

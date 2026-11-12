@@ -22,7 +22,14 @@ export function countLines(numstat: string): number {
 /** True when the body has a "Size justification" heading followed by non-empty text. */
 export function hasJustification(body: string): boolean {
   const match = /^#+\s*Size justification\s*$([\s\S]*?)(?=^#+\s|(?![\s\S]))/im.exec(body);
-  const text = (match?.[1] ?? '').replace(/<!--[\s\S]*?-->/g, '').trim();
+  let text = match?.[1] ?? '';
+  // Repeat until stable: one pass can leave a new comment opener behind.
+  let prev;
+  do {
+    prev = text;
+    text = text.replace(/<!--[\s\S]*?-->/g, '');
+  } while (text !== prev);
+  text = text.trim();
   return text.length > 0;
 }
 
