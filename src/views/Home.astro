@@ -3,8 +3,10 @@ import { getCollection } from 'astro:content';
 import { PUBLIC_BOOKING_URL as booking } from 'astro:env/client';
 import Button from '../components/Button.astro';
 import type { Locale } from '../i18n/config';
+import { routes } from '../i18n/routes';
 import { t } from '../i18n/ui';
 import Base from '../layouts/Base.astro';
+import { getCases } from '../lib/case-pages';
 import ScreenWall from '../samples/ScreenWall.astro';
 import { sampleCopy } from '../samples/copy';
 import About from './home/About.astro';
@@ -20,14 +22,7 @@ interface Props {
 const { locale } = Astro.props;
 const copy = sampleCopy[locale];
 const words = copy.statement.split(' ');
-// Featured first, then the most recent.
-const cases = (
-  await getCollection('cases', ({ id, data }) => id.startsWith(`${locale}/`) && !data.draft)
-).sort(
-  (a, b) =>
-    Number(b.data.featured) - Number(a.data.featured) ||
-    b.data.period.start.getTime() - a.data.period.start.getTime(),
-);
+const { cases } = await getCases(locale);
 const hasCases = cases.length > 0;
 // Most recent first.
 const testimonials = (
@@ -39,7 +34,7 @@ const call = booking ? { id: 'contact', label: t(locale, 'cta.book') } : undefin
 
 <Base
   locale={locale}
-  routeKey="home"
+  paths={routes.home}
   title={t(locale, 'meta.home.title')}
   description={t(locale, 'meta.home.description')}
   tone="ink"
