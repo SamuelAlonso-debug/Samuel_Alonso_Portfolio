@@ -137,7 +137,11 @@ if (statement) {
     cur: 0,
     update: (p) => {
       const k = clamp(p * 1.2) * words.length;
-      words.forEach((w, i) => w.style.setProperty('--lit', String(clamp(k - i))));
+      // Only words whose value changed: a style write per word per frame restyles every word.
+      words.forEach((w, i) => {
+        const lit = String(clamp(k - i));
+        if (w.style.getPropertyValue('--lit') !== lit) w.style.setProperty('--lit', lit);
+      });
     },
   });
 }
@@ -173,7 +177,8 @@ if (cases && track) {
       media.forEach((m, i) =>
         m?.style.setProperty('translate', `${(((centers[i] ?? 0) - shift * p) / vw) * -9}% 0`),
       );
-      if (count) count.textContent = String(panelAt(p, panels.length)).padStart(2, '0');
+      const n = String(panelAt(p, panels.length)).padStart(2, '0');
+      if (count && count.textContent !== n) count.textContent = n;
       bar?.style.setProperty('transform', `scaleX(${p})`);
     },
   });
