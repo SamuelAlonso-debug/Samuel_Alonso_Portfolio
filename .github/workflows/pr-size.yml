@@ -11,6 +11,8 @@ permissions:
 jobs:
   size:
     name: PR size
+    # A merged PR's branch is gone, so the diff cannot run; edits after merge skip instead of failing.
+    if: github.event.pull_request.state == 'open'
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
