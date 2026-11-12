@@ -71,6 +71,7 @@ const themed: [string, string, number][] = [
 const fields: [string, string, number][] = [
   ['ink-field-fg', 'ink-field', TEXT],
   ['ink-field-muted', 'ink-field', TEXT],
+  ['ink-field-hours', 'ink-field', GRAPHIC],
   ['petrol-field-fg', 'petrol-field', TEXT],
   ['petrol-field-muted', 'petrol-field', TEXT],
   ['action-ink', 'action', TEXT],
@@ -93,6 +94,10 @@ describe('token contrast (WCAG 2.2 AA)', () => {
 
   it.each(fields)('field: %s on %s ≥ %d:1', (fg, bg, min) => {
     expect(contrast(light, fg, bg)).toBeGreaterThanOrEqual(min);
+  });
+
+  it('ink tone: the hours arc reads on the dial surface (≥3:1)', () => {
+    expect(contrast(tone('ink'), 'ink-field-hours', 'surface')).toBeGreaterThanOrEqual(GRAPHIC);
   });
 
   it('dark values match between the media query and the manual toggle', () => {

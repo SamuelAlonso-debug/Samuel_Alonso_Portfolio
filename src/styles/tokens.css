@@ -23,6 +23,7 @@
   --ink-field-fg: oklch(95% 0.005 240);
   --ink-field-muted: oklch(73% 0.012 240);
   --ink-field-line: oklch(33% 0.012 240);
+  --ink-field-hours: oklch(72% 0.09 210); /* working-hours arc on the about dial */
   --petrol-field: oklch(35% 0.068 215);
   --petrol-field-fg: oklch(97% 0.008 215);
   --petrol-field-muted: oklch(84% 0.03 215);

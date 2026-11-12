@@ -4,6 +4,7 @@ import { t } from '../i18n/ui';
 import Base from '../layouts/Base.astro';
 import ScreenWall from '../samples/ScreenWall.astro';
 import { sampleCopy } from '../samples/copy';
+import About from './home/About.astro';
 
 interface Props {
   locale: Locale;
@@ -62,6 +63,8 @@ const words = copy.statement.split(' ');
       </p>
     </div>
   </section>
+
+  <About locale={locale} />
 </Base>
 
 <script>
