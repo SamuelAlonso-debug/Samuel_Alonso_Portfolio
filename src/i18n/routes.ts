@@ -11,4 +11,5 @@ export const routes = {
   home: { es: '/', en: '/en/' },
   cases: { es: '/casos/', en: '/en/work/' },
   howItsMade: { es: '/como-esta-hecho/', en: '/en/how-its-made/' },
+  privacy: { es: '/aviso-de-privacidad/', en: '/en/privacy/' },
 } as const satisfies Record<string, Paths>;

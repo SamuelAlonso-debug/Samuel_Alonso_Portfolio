@@ -16,12 +16,15 @@ const year = new Date(__BUILD_DATE__).getUTCFullYear();
     <p>
       © {year} Samuel Alonso Hernández. {t(locale, 'footer.rights')}
     </p>
-    <p>
+    <p class="flex flex-wrap gap-x-6 gap-y-2">
       <a
         href={routes.howItsMade[locale]}
         class="underline decoration-current/40 underline-offset-2"
       >
         {t(locale, 'how.made.title')}
+      </a>
+      <a href={routes.privacy[locale]} class="underline decoration-current/40 underline-offset-2">
+        {t(locale, 'privacy.title')}
       </a>
     </p>
     <p class="font-mono text-xs">
