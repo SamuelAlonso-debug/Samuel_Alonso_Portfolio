@@ -19,9 +19,8 @@ Enforced in CI:
 - Lighthouse (mobile): performance ≥95, accessibility 100, best practices 100.
 - LCP ≤1.8 s, CLS ≤0.05, TBT ≤100 ms.
 - 0 axe violations (WCAG 2.2 AA) in ES/EN, light/dark, desktop/mobile.
+- JavaScript ≤20 KB gzipped per page, home page ≤400 KB, measured on the build.
 - MDN HTTP Observatory A+, checked on the live deploy.
-
-Design budgets, not yet enforced in CI: JavaScript ≤20 KB gzipped per page, home page ≤400 KB.
 
 Production only receives commits that passed every gate, through the manual Deploy workflow. Merging to `main` does not deploy.
 
