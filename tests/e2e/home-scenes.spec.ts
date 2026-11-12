@@ -70,6 +70,14 @@ test('header links reach their scene; the menu sheet closes on navigation', asyn
   await expect(page).toHaveURL(/#how$/);
 });
 
+test('no empty case track: the scene exists only with cases', async ({ page }) => {
+  await page.goto('/');
+  const scene = await page.locator('#cases').count();
+  const panels = await page.locator('#cases .panel').count();
+  expect(scene === 0 || panels > 0, `scene ${scene}, panels ${panels}`).toBe(true);
+  await expect(page.locator('header a[href="#cases"]')).toHaveCount(scene);
+});
+
 test('reduced motion: no pinning, statement fully lit', async ({ page }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.goto('/');

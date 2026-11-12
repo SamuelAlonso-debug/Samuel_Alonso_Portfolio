@@ -1,0 +1,143 @@
+---
+/**
+ * Cases scene: vertical scroll drives a horizontal track of case panels (scenes.ts).
+ * ≤820 px, reduced motion and no JS: vertical list. No section while there are no cases.
+ */
+import type { CollectionEntry } from 'astro:content';
+import CasePanel from '../../components/CasePanel.astro';
+import type { Locale } from '../../i18n/config';
+import { t } from '../../i18n/ui';
+
+interface Props {
+  locale: Locale;
+  cases: CollectionEntry<'cases'>[];
+}
+
+const { locale, cases } = Astro.props;
+const total = cases.length;
+const pad = (n: number) => String(n).padStart(2, '0');
+---
+
+{total > 0 && (
+  <section id="cases" class="cases" data-tone="paper" aria-labelledby="cases-title">
+    <div class="stage">
+      <div id="track" class="track">
+        <div class="intro">
+          <h2 id="cases-title">{t(locale, 'cases.title')}</h2>
+          <p>{t(locale, 'cases.intro')}</p>
+        </div>
+        {cases.map((entry, i) => (
+          <CasePanel entry={entry} index={i + 1} total={total} />
+        ))}
+      </div>
+      <div class="counter" aria-hidden="true">
+        <span id="count">01</span>
+        <span class="bar">
+          <i id="count-bar" />
+        </span>
+        <span>{pad(total)}</span>
+      </div>
+    </div>
+  </section>
+)}
+
+<style>
+  .cases {
+    --pad: clamp(20px, 4vw, 64px);
+    position: relative;
+  }
+  .stage {
+    position: sticky;
+    top: 0;
+    display: flex;
+    align-items: center;
+    height: 100svh;
+    overflow: hidden;
+  }
+  .track {
+    display: flex;
+    align-items: stretch;
+    gap: 6vw;
+    padding-inline: var(--pad) 12vw;
+  }
+  .intro {
+    flex: 0 0 min(30rem, 34vw);
+    align-self: center;
+  }
+  h2 {
+    font-size: clamp(3.5rem, 9vw, 9rem);
+    line-height: 0.86;
+    font-weight: 700;
+    letter-spacing: -0.035em;
+  }
+  .intro p {
+    max-width: 22ch;
+    margin-top: 20px;
+    font-size: 1.25rem;
+    line-height: 1.4;
+    color: var(--muted);
+  }
+  .counter {
+    position: absolute;
+    bottom: 4vh;
+    left: var(--pad);
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    font-size: 0.95rem;
+    font-variant-numeric: tabular-nums;
+    color: var(--muted);
+  }
+  .bar {
+    width: 120px;
+    height: 2px;
+    overflow: hidden;
+    border-radius: 2px;
+    background: var(--line);
+  }
+  .bar i {
+    display: block;
+    height: 100%;
+    background: var(--ink);
+    transform: scaleX(0);
+    transform-origin: 0 50%;
+  }
+  @media (max-width: 820px), (prefers-reduced-motion: reduce) {
+    .stage {
+      position: relative;
+      display: block;
+      height: auto;
+      padding-block: 14vh 6vh;
+      overflow: visible;
+    }
+    .track {
+      flex-direction: column;
+      gap: 12vh;
+      padding-inline: var(--pad);
+    }
+    .intro {
+      flex-basis: auto;
+      align-self: stretch;
+    }
+    .counter {
+      display: none;
+    }
+  }
+  :global(html:not(.js)) .stage {
+    position: relative;
+    display: block;
+    height: auto;
+    padding-block: 14vh 6vh;
+  }
+  :global(html:not(.js)) .track {
+    flex-direction: column;
+    gap: 12vh;
+    padding-inline: var(--pad);
+  }
+  :global(html:not(.js)) .intro {
+    align-self: stretch;
+  }
+  :global(html:not(.js)) .counter {
+    display: none;
+  }
+</style>
