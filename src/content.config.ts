@@ -13,7 +13,11 @@ const cases = defineCollection({
 });
 
 const testimonials = defineCollection({
-  loader: glob({ pattern: '**/*.md', base: './src/content/testimonials' }),
+  // TESTIMONIALS_DIR=tests/fixtures/testimonials renders the scene with test quotes; production never sets it.
+  loader: glob({
+    pattern: '**/*.md',
+    base: process.env['TESTIMONIALS_DIR'] ?? './src/content/testimonials',
+  }),
   schema: testimonialSchema,
 });
 

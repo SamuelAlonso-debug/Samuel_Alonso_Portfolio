@@ -8,6 +8,7 @@ import { sampleCopy } from '../samples/copy';
 import About from './home/About.astro';
 import Cases from './home/Cases.astro';
 import HowIWork from './home/HowIWork.astro';
+import Testimonials from './home/Testimonials.astro';
 
 interface Props {
   locale: Locale;
@@ -25,6 +26,10 @@ const cases = (
     b.data.period.start.getTime() - a.data.period.start.getTime(),
 );
 const hasCases = cases.length > 0;
+// Most recent first.
+const testimonials = (
+  await getCollection('testimonials', ({ id }) => id.startsWith(`${locale}/`))
+).sort((a, b) => b.data.date.getTime() - a.data.date.getTime());
 ---
 
 <Base
@@ -91,6 +96,7 @@ const hasCases = cases.length > 0;
   <Cases locale={locale} cases={cases} />
   <About locale={locale} />
   <HowIWork locale={locale} />
+  <Testimonials locale={locale} testimonials={testimonials} />
 </Base>
 
 <script>

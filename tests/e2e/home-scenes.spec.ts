@@ -78,10 +78,32 @@ test('no empty case track: the scene exists only with cases', async ({ page }) =
   await expect(page.locator('header a[href="#cases"]')).toHaveCount(scene);
 });
 
+test('no empty testimonials scene; one quote at a time while pinned', async ({ page }) => {
+  await page.goto('/');
+  const scene = page.locator('#testimonials');
+  const quotes = scene.locator('.quote');
+  const n = await quotes.count();
+  await expect(scene).toHaveCount(n > 0 ? 1 : 0);
+  if (n < 2) return;
+  await scene.evaluate((s) => scrollTo(0, scrollY + s.getBoundingClientRect().top));
+  await expect(scene).toHaveClass(/pinned/);
+  await expect(page.locator('html')).toHaveAttribute('data-tone', 'paper');
+  await expect(quotes.first()).toHaveCSS('opacity', '1');
+  await expect(quotes.nth(1)).toHaveCSS('opacity', '0');
+  // A focused author link brings its quote on screen.
+  const linked = quotes.filter({ has: page.getByRole('link') }).last();
+  if ((await linked.count()) === 0) return;
+  await linked.getByRole('link').focus();
+  await expect(linked).toHaveCSS('opacity', '1');
+});
+
 test('reduced motion: no pinning, statement fully lit', async ({ page }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.goto('/');
   await expect(page.locator('#how .row').last()).toHaveCSS('opacity', '1');
   await expect(page.locator('#hero > div').first()).toHaveCSS('position', 'relative');
   await expect(page.locator('#statement .w').last()).toHaveCSS('opacity', '1');
+  for (const quote of await page.locator('#testimonials .quote').all()) {
+    await expect(quote).toHaveCSS('opacity', '1');
+  }
 });

@@ -1,0 +1,65 @@
+---
+/** Testimonial quote: the words, then who said it. Translations are flagged. */
+import type { CollectionEntry } from 'astro:content';
+import type { Locale } from '../i18n/config';
+import { t } from '../i18n/ui';
+
+interface Props {
+  entry: CollectionEntry<'testimonials'>;
+  locale: Locale;
+}
+
+const { entry, locale } = Astro.props;
+const { quote, author, originalLocale } = entry.data;
+const marked = locale === 'es' ? `«${quote}»` : `“${quote}”`;
+const position = `${author.role}, ${author.company}`;
+---
+
+<figure class:list={['quote', { long: quote.length > 160 }]}>
+  <blockquote>
+    <p>{marked}</p>
+  </blockquote>
+  <figcaption>
+    <b>{author.linkedin ? <a href={author.linkedin}>{author.name}</a> : author.name}</b>
+    <span>{position}</span>
+    <span>{author.relationship}</span>
+    {originalLocale !== locale && <span>{t(locale, 'testimonials.translated')}</span>}
+  </figcaption>
+</figure>
+
+<style>
+  p {
+    max-width: 22ch;
+    font-size: clamp(1.9rem, 1rem + 3vw, 4rem);
+    line-height: 1.08;
+    font-weight: 600;
+    letter-spacing: -0.03em;
+  }
+  /* Long quotes drop to a text size so a 100svh scene never clips them. */
+  .long p {
+    max-width: 34ch;
+    font-size: clamp(1.4rem, 1rem + 1.5vw, 2.4rem);
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+  }
+  figcaption {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 16px;
+    margin-top: 24px;
+    font-size: 1.05rem;
+  }
+  span {
+    color: var(--muted);
+  }
+  a {
+    text-decoration-line: underline;
+    text-decoration-color: color-mix(in oklch, currentColor 40%, transparent);
+    transition: text-decoration-color 150ms ease-out;
+  }
+  @media (hover: hover) and (pointer: fine) {
+    a:hover {
+      text-decoration-color: currentColor;
+    }
+  }
+</style>
