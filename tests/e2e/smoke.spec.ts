@@ -1,10 +1,26 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from '@playwright/test';
 
+// Case pages exist only with cases: CI has none, a fixtures build (CASES_DIR) has three.
+const withCases = !!process.env['CASES_DIR'];
 const pages = [
   { path: '/', lang: 'es-MX', switchTo: '/en/' },
   { path: '/en/', lang: 'en', switchTo: '/' },
-] as const;
+  ...(withCases
+    ? ([
+        { path: '/casos/sea/', lang: 'es-MX', switchTo: '/en/work/sea/' },
+        { path: '/en/work/sea/', lang: 'en', switchTo: '/casos/sea/' },
+      ] as const)
+    : []),
+];
+
+test('case lists show every case in both locales', async ({ page }) => {
+  test.skip(!withCases, 'needs CASES_DIR');
+  for (const path of ['/casos/', '/en/work/']) {
+    await page.goto(path);
+    await expect(page.locator('main li h2 a')).toHaveCount(3);
+  }
+});
 
 for (const { path, lang, switchTo } of pages) {
   test.describe(`page ${path}`, () => {
