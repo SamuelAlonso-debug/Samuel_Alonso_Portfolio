@@ -1,6 +1,7 @@
 ---
 import '../styles/global.css';
 import { Font } from 'astro:assets';
+import { PUBLIC_CF_BEACON_TOKEN as beaconToken } from 'astro:env/client';
 import SiteFooter from '../components/SiteFooter.astro';
 import SiteHeader, { type Section } from '../components/SiteHeader.astro';
 import { htmlLang, locales, ogLocale, type Locale } from '../i18n/config';
@@ -135,5 +136,16 @@ const jsonLd = JSON.stringify({ '@context': 'https://schema.org', '@graph': grap
       <slot />
     </main>
     <SiteFooter locale={locale} />
+    {
+      /* Cloudflare Web Analytics, cookieless. Inserted by hand so the CSP stays strict. */
+      beaconToken && (
+        <script
+          is:inline
+          defer
+          src="https://static.cloudflareinsights.com/beacon.min.js"
+          data-cf-beacon={JSON.stringify({ token: beaconToken })}
+        />
+      )
+    }
   </body>
 </html>
