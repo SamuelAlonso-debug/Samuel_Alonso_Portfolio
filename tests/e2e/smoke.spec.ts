@@ -136,6 +136,6 @@ test('contact form sends a valid message and shows the no-JS fallback', async ({
   const plain = await noJs.newPage();
   await plain.goto('/contacto/');
   await expect(plain.locator('#contact-form')).toBeHidden();
-  await expect(plain.getByRole('link', { name: 'samuelalonsodev@gmail.com' })).toBeVisible();
+  await expect(plain.getByRole('link', { name: 'samuelalonsodv@gmail.com' })).toBeVisible();
   await noJs.close();
 });
