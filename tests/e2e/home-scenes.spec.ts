@@ -41,9 +41,22 @@ test('about dial shows Querétaro time and when work resumes', async ({ page }) 
   await expect(dial.locator('.status')).not.toHaveAttribute('data-on');
 });
 
+test('how I work: petrol field, rows enter once in view', async ({ page }) => {
+  await page.goto('/');
+  const rows = page.locator('#how .row');
+  await expect(rows).toHaveCount(3);
+  await page.locator('#how h2').evaluate((h) => h.scrollIntoView({ block: 'center' }));
+  await expect(page.locator('html')).toHaveAttribute('data-tone', 'petrol');
+  for (const row of await rows.all()) {
+    await row.scrollIntoViewIfNeeded();
+    await expect(row).toHaveCSS('opacity', '1');
+  }
+});
+
 test('reduced motion: no pinning, statement fully lit', async ({ page }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.goto('/');
+  await expect(page.locator('#how .row').last()).toHaveCSS('opacity', '1');
   await expect(page.locator('#hero > div').first()).toHaveCSS('position', 'relative');
   await expect(page.locator('#statement .w').last()).toHaveCSS('opacity', '1');
 });

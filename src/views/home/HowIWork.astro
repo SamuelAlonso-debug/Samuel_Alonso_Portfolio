@@ -1,0 +1,115 @@
+---
+/**
+ * How I work: petrol field with the engagement rows. Each row enters once
+ * (opacity, 4 px blur, 24 px). Reduced motion and no JS: rows are visible.
+ */
+import type { Locale } from '../../i18n/config';
+import { t } from '../../i18n/ui';
+import { sampleCopy } from '../../samples/copy';
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const rows = sampleCopy[locale].howIWork;
+---
+
+<section id="how" class="how" data-tone="petrol" aria-labelledby="how-title">
+  <h2 id="how-title">{t(locale, 'how.title')}</h2>
+  <div class="rows">
+    {rows.map(([title, detail, duration]) => (
+      <div class="row">
+        <h3>{title}</h3>
+        <p>{detail}</p>
+        <span class="dur">{duration}</span>
+      </div>
+    ))}
+  </div>
+</section>
+
+<script>
+  const rows = document.querySelectorAll('#how .row');
+  const enter = new IntersectionObserver(
+    (entries) => {
+      for (const entry of entries) {
+        if (!entry.isIntersecting) continue;
+        entry.target.classList.add('in');
+        enter.unobserve(entry.target);
+      }
+    },
+    { threshold: 0.35 },
+  );
+  rows.forEach((row) => enter.observe(row));
+</script>
+
+<style>
+  .how {
+    --pad: clamp(20px, 4vw, 64px);
+    padding: 22vh var(--pad) 18vh;
+  }
+  h2 {
+    max-width: 12ch;
+    font-size: clamp(2.6rem, 1.4rem + 4.4vw, 6rem);
+    line-height: 0.92;
+    font-weight: 700;
+    letter-spacing: -0.035em;
+  }
+  .rows {
+    margin-top: 10vh;
+  }
+  .row {
+    display: grid;
+    gap: 8px 4vw;
+    padding: 32px 0;
+    border-top: 1px solid var(--line);
+  }
+  .row:last-child {
+    border-bottom: 1px solid var(--line);
+  }
+  h3 {
+    font-size: clamp(1.7rem, 1rem + 2.2vw, 3rem);
+    line-height: 1.05;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+  }
+  p {
+    max-width: 36ch;
+    font-size: 1.125rem;
+    color: var(--muted);
+  }
+  .dur {
+    font-variant-numeric: tabular-nums;
+  }
+  @media (min-width: 900px) {
+    .row {
+      grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr) 9rem;
+      align-items: baseline;
+    }
+    .dur {
+      text-align: right;
+    }
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    :global(html.js) .row {
+      opacity: 0;
+      filter: blur(4px);
+      transform: translate3d(0, 24px, 0);
+      transition:
+        opacity 500ms var(--ease-out),
+        filter 500ms var(--ease-out),
+        transform 500ms var(--ease-out);
+    }
+    :global(html.js) .row:nth-child(2) {
+      transition-delay: 100ms;
+    }
+    :global(html.js) .row:nth-child(3) {
+      transition-delay: 200ms;
+    }
+    :global(html.js) .row.in {
+      opacity: 1;
+      filter: none;
+      transform: none;
+    }
+  }
+</style>

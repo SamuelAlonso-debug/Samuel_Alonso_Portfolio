@@ -8,6 +8,7 @@ interface SampleCopy {
   headline: string;
   statement: string;
   about: { bio: string; facts: [term: string, detail: string][] };
+  howIWork: [title: string, detail: string, duration: string][];
 }
 
 export const sampleCopy: Record<Locale, SampleCopy> = {
@@ -24,6 +25,23 @@ export const sampleCopy: Record<Locale, SampleCopy> = {
         ['Trabajo con', 'Pymes y equipos pequeños'],
       ],
     },
+    howIWork: [
+      [
+        'Revisión de arquitectura',
+        'Un documento con el estado de tu sistema, los riesgos en orden y un plan de 90 días.',
+        '1 a 2 semanas',
+      ],
+      [
+        'Proyecto de punta a punta',
+        'Requisitos, diseño, construcción y puesta en producción, con despliegues verificados.',
+        '1 a 4 meses',
+      ],
+      [
+        'Soporte mensual',
+        'Mantenimiento, monitoreo y respuesta a incidentes en horario de Querétaro.',
+        'Mes a mes',
+      ],
+    ],
   },
   en: {
     headline: "Systems for small businesses that can't stop, with results you can check.",
@@ -38,5 +56,22 @@ export const sampleCopy: Record<Locale, SampleCopy> = {
         ['Works with', 'Small businesses and teams'],
       ],
     },
+    howIWork: [
+      [
+        'Architecture review',
+        "A document with your system's state, risks in order and a 90-day plan.",
+        '1 to 2 weeks',
+      ],
+      [
+        'End-to-end project',
+        'Requirements, design, build and launch, with verified deploys.',
+        '1 to 4 months',
+      ],
+      [
+        'Monthly support',
+        'Maintenance, monitoring and incident response on Querétaro hours.',
+        'Month to month',
+      ],
+    ],
   },
 };
