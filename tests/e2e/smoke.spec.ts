@@ -73,7 +73,7 @@ for (const { path, lang, switchTo } of pages) {
       const menu = page.locator('[data-menu]');
       if (await menu.isVisible()) await menu.click();
       await page.locator('[data-lang-switch]:visible').click();
-      await expect(page).toHaveURL(new RegExp(`${switchTo.replace(/\//g, '\\/')}$`));
+      await expect(page).toHaveURL((url) => url.pathname.endsWith(switchTo));
     });
 
     for (const colorScheme of ['light', 'dark'] as const) {
