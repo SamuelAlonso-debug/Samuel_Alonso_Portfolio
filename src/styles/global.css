@@ -85,13 +85,9 @@
     -webkit-text-size-adjust: 100%;
   }
 
+  /* No own background: the html tone fade is the only full-screen repaint. */
   body {
     min-height: 100dvh;
-    transition:
-      background-color 700ms var(--ease-scene),
-      color 700ms var(--ease-scene);
-    background-color: var(--paper);
-    color: var(--ink);
     font-size: var(--text-base);
     line-height: var(--text-base--line-height);
   }

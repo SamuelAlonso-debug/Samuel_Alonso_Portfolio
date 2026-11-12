@@ -15,6 +15,8 @@ const byId = (id: string) => document.getElementById(id);
 interface Scene {
   el: HTMLElement;
   cur: number;
+  /** Progress last drawn: a settled scene is not redrawn. */
+  shown?: number | undefined;
   measure?: () => void;
   update: (p: number) => void;
 }
@@ -135,7 +137,7 @@ if (statement) {
     cur: 0,
     update: (p) => {
       const k = clamp(p * 1.2) * words.length;
-      words.forEach((w, i) => (w.style.opacity = String(lerp(0.4, 1, clamp(k - i)))));
+      words.forEach((w, i) => w.style.setProperty('--lit', String(clamp(k - i))));
     },
   });
 }
@@ -215,54 +217,67 @@ if (voices && quoteBox && quotes.length > 1) {
 // Contact: the curve over the ink field flattens as the field rises (CSS hides it with
 // reduced motion).
 const curve = document.querySelector<HTMLElement>('#contact .curve');
-function updateCurve() {
+// Readers measure now and return their writes, so a frame reads everything before it writes.
+function readCurve() {
   const top = curve?.parentElement?.getBoundingClientRect().top;
-  if (curve && top !== undefined)
-    curve.style.transform = `scaleY(${clamp(top / (innerHeight * 0.9))})`;
+  return () => {
+    if (curve && top !== undefined)
+      curve.style.transform = `scaleY(${clamp(top / (innerHeight * 0.9))})`;
+  };
 }
 
 // Page tone and the current header link follow the scene at mid-screen.
 const toned = [...document.querySelectorAll<HTMLElement>('main [data-tone]')];
 const sectionLinks = [...document.querySelectorAll<HTMLAnchorElement>('[data-section-link]')];
 let currentId: string | undefined;
-function updateTone() {
+function readTone() {
   const mid = innerHeight / 2;
-  const i = toned.findIndex((s) => {
-    const r = s.getBoundingClientRect();
-    return r.top <= mid && r.bottom > mid;
-  });
+  const rects = toned.map((s) => s.getBoundingClientRect());
+  let i = rects.findIndex((r) => r.top <= mid && r.bottom > mid);
+  // Past the last scene (footer): the last scene keeps the tone.
+  if (i < 0 && (rects.at(-1)?.bottom ?? mid) < mid) i = toned.length - 1;
   let hit = toned[i];
   // data-tone-at="top" (contact): the scene takes over once its top reaches the screen top.
-  if (hit?.dataset['toneAt'] === 'top' && hit.getBoundingClientRect().top > 1) hit = toned[i - 1];
-  if (hit?.dataset['tone'] && document.documentElement.dataset['tone'] !== hit.dataset['tone']) {
-    document.documentElement.dataset['tone'] = hit.dataset['tone'];
-  }
-  if (hit?.id === currentId) return;
-  currentId = hit?.id;
-  for (const link of sectionLinks) {
-    if (currentId && link.hash === `#${currentId}`) link.setAttribute('aria-current', 'location');
-    else link.removeAttribute('aria-current');
-  }
+  if (hit?.dataset['toneAt'] === 'top' && (rects[i]?.top ?? 0) > 1) hit = toned[i - 1];
+  return () => {
+    const tone = hit?.dataset['tone'];
+    if (tone && document.documentElement.dataset['tone'] !== tone) {
+      document.documentElement.dataset['tone'] = tone;
+    }
+    if (hit?.id === currentId) return;
+    currentId = hit?.id;
+    for (const link of sectionLinks) {
+      if (currentId && link.hash === `#${currentId}`) link.setAttribute('aria-current', 'location');
+      else link.removeAttribute('aria-current');
+    }
+  };
+}
+
+function draw(s: Scene) {
+  if (s.cur === s.shown) return;
+  s.update(s.cur);
+  s.shown = s.cur;
 }
 
 let running = false;
 function frame() {
+  const targets = scenes.map((s) => progress(s.el));
+  const writes = [readCurve(), readTone()];
   let moving = false;
-  for (const s of scenes) {
-    const target = progress(s.el);
+  scenes.forEach((s, i) => {
+    const target = targets[i] ?? s.cur;
     s.cur += (target - s.cur) * 0.14;
     if (Math.abs(target - s.cur) < 4e-4) s.cur = target;
     else moving = true;
-    s.update(s.cur);
-  }
-  updateCurve();
-  updateTone();
+    draw(s);
+  });
+  for (const write of writes) write();
   running = moving;
   if (moving) requestAnimationFrame(frame);
 }
 
 function onScroll() {
-  if (reduce.matches) return updateTone();
+  if (reduce.matches) return readTone()();
   if (!running) {
     running = true;
     requestAnimationFrame(frame);
@@ -273,10 +288,11 @@ function layout() {
   for (const s of scenes) {
     s.measure?.();
     s.cur = reduce.matches ? 1 : progress(s.el);
-    s.update(s.cur);
+    s.shown = undefined;
+    draw(s);
   }
-  updateCurve();
-  updateTone();
+  readCurve()();
+  readTone()();
 }
 
 addEventListener('scroll', onScroll, { passive: true });

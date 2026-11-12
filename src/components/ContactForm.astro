@@ -96,6 +96,7 @@ const button = compact
     data-errors={JSON.stringify(copy.errors)}
     data-sending={copy.sending}
     data-sent={copy.sent}
+    data-turnstile={siteKey ? `${turnstileOrigin}/turnstile/v0/api.js` : undefined}
   >
     {compact && (
       <h3 id="contact-form-title" class="text-xl font-semibold">
@@ -151,12 +152,7 @@ const button = compact
       Website
       <input name="website" tabindex="-1" autocomplete="off" />
     </label>
-    <div
-      class="cf-turnstile"
-      data-sitekey={siteKey}
-      data-language={locale}
-      data-theme={compact ? 'dark' : 'auto'}
-    ></div>
+    <div class="cf-turnstile" data-sitekey={siteKey} data-language={locale} data-theme="auto"></div>
     <p class="text-sm text-muted">
       {copy.privacy}{' '}
       <a class="underline" href={routes.privacy[locale]}>
@@ -172,7 +168,6 @@ const button = compact
     <p class="status text-lg" role="status" aria-live="polite"></p>
   </form>
 )}
-{siteKey && <script is:inline src={`${turnstileOrigin}/turnstile/v0/api.js`} async defer></script>}
 
 <script>
   import '../scripts/contact-form';

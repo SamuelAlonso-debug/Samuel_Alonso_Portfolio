@@ -11,6 +11,23 @@ if (form) {
   const label = button?.textContent ?? '';
   form.hidden = false;
 
+  // Turnstile loads as the form nears the screen: its script and iframe stay off the first load.
+  const turnstileSrc = form.dataset['turnstile'];
+  if (turnstileSrc) {
+    const io = new IntersectionObserver(
+      (entries) => {
+        if (!entries.some((e) => e.isIntersecting)) return;
+        io.disconnect();
+        const script = document.createElement('script');
+        script.src = turnstileSrc;
+        script.async = true;
+        document.head.append(script);
+      },
+      { rootMargin: '100% 0px' },
+    );
+    io.observe(form);
+  }
+
   const show = (text: string) => {
     if (status) status.textContent = text;
   };
