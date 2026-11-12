@@ -137,8 +137,10 @@ if (statement) {
   });
 }
 
-// Page tone follows the scene at mid-screen.
+// Page tone and the current header link follow the scene at mid-screen.
 const toned = [...document.querySelectorAll<HTMLElement>('main [data-tone]')];
+const sectionLinks = [...document.querySelectorAll<HTMLAnchorElement>('[data-section-link]')];
+let currentId: string | undefined;
 function updateTone() {
   const mid = innerHeight / 2;
   const hit = toned.find((s) => {
@@ -147,6 +149,12 @@ function updateTone() {
   });
   if (hit?.dataset['tone'] && document.documentElement.dataset['tone'] !== hit.dataset['tone']) {
     document.documentElement.dataset['tone'] = hit.dataset['tone'];
+  }
+  if (hit?.id === currentId) return;
+  currentId = hit?.id;
+  for (const link of sectionLinks) {
+    if (currentId && link.hash === `#${currentId}`) link.setAttribute('aria-current', 'location');
+    else link.removeAttribute('aria-current');
   }
 }
 

@@ -22,6 +22,10 @@ const words = copy.statement.split(' ');
   title={t(locale, 'meta.home.title')}
   description={t(locale, 'meta.home.description')}
   tone="ink"
+  sections={[
+    { id: 'about', label: t(locale, 'nav.about') },
+    { id: 'how', label: t(locale, 'how.title') },
+  ]}
 >
   <section id="hero" class="hero" data-scene data-tone="ink" aria-labelledby="hero-name">
     <div class="stage">

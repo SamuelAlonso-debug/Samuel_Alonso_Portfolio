@@ -2,7 +2,7 @@
 import '../styles/global.css';
 import { Font } from 'astro:assets';
 import SiteFooter from '../components/SiteFooter.astro';
-import SiteHeader from '../components/SiteHeader.astro';
+import SiteHeader, { type Section } from '../components/SiteHeader.astro';
 import { htmlLang, locales, ogLocale, type Locale } from '../i18n/config';
 import { pathFor, type RouteKey } from '../i18n/routes';
 import { t } from '../i18n/ui';
@@ -19,9 +19,11 @@ interface Props {
   noindex?: boolean | undefined;
   /** Field tone for pages that start on a color field (home). */
   tone?: 'ink' | 'petrol' | undefined;
+  /** In-page sections linked from the header. */
+  sections?: Section[] | undefined;
 }
 
-const { locale, title, description, routeKey, noindex = false, tone } = Astro.props;
+const { locale, title, description, routeKey, noindex = false, tone, sections } = Astro.props;
 
 const canonical = routeKey ? new URL(pathFor(routeKey, locale), Astro.site).href : undefined;
 const alternates = routeKey
@@ -71,7 +73,7 @@ const xDefault = routeKey ? new URL(pathFor(routeKey, 'es'), Astro.site).href : 
     >
       {t(locale, 'a11y.skip')}
     </a>
-    <SiteHeader locale={locale} routeKey={routeKey} />
+    <SiteHeader locale={locale} routeKey={routeKey} sections={sections} />
     <main id="content" tabindex="-1" class="focus:outline-none">
       <slot />
     </main>

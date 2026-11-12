@@ -37,7 +37,10 @@ for (const { path, lang, switchTo } of pages) {
 
     test('language switch leads to the equivalent page', async ({ page }) => {
       await page.goto(path);
-      await page.locator('[data-lang-switch]').click();
+      // ≤820 px the language link lives in the menu sheet.
+      const menu = page.locator('[data-menu]');
+      if (await menu.isVisible()) await menu.click();
+      await page.locator('[data-lang-switch]:visible').click();
       await expect(page).toHaveURL(new RegExp(`${switchTo.replace(/\//g, '\\/')}$`));
     });
 

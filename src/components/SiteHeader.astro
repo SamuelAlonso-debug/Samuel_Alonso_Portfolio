@@ -5,12 +5,20 @@ import { t } from '../i18n/ui';
 import LangSwitch from './LangSwitch.astro';
 import ThemeToggle from './ThemeToggle.astro';
 
+export interface Section {
+  id: string;
+  label: string;
+}
+
 interface Props {
   locale: Locale;
   routeKey?: RouteKey | undefined;
+  /** In-page sections: links on desktop, a menu sheet at ≤820 px. */
+  sections?: Section[] | undefined;
 }
 
-const { locale, routeKey } = Astro.props;
+const { locale, routeKey, sections = [] } = Astro.props;
+const menu = sections.length > 0;
 ---
 
 <header class="fixed inset-x-3 top-3 z-40 flex items-center justify-between gap-1 rounded-full bg-paper/70 py-1.5 pr-1.5 pl-5 whitespace-nowrap shadow-float backdrop-blur-md sm:inset-x-auto sm:left-1/2 sm:-translate-x-1/2">
@@ -21,8 +29,211 @@ const { locale, routeKey } = Astro.props;
   >
     Samuel Alonso
   </a>
+  {menu && (
+    <nav class="links" aria-label={t(locale, 'nav.label')}>
+      {sections.map((s) => (
+        <a href={`#${s.id}`} data-section-link>
+          {s.label}
+        </a>
+      ))}
+    </nav>
+  )}
   <div class="flex items-center gap-1">
-    {routeKey && <LangSwitch locale={locale} routeKey={routeKey} />}
+    {routeKey && (
+      <span class:list={{ 'max-[820px]:hidden': menu }}>
+        <LangSwitch locale={locale} routeKey={routeKey} />
+      </span>
+    )}
     <ThemeToggle locale={locale} />
+    {menu && (
+      <button
+        type="button"
+        class="menu-btn"
+        aria-expanded="false"
+        aria-controls="site-menu"
+        data-menu
+      >
+        <span class="sr-only">{t(locale, 'nav.menu')}</span>
+        <i />
+        <i />
+      </button>
+    )}
   </div>
 </header>
+{menu && (
+  <div id="site-menu" class="sheet">
+    <nav aria-label={t(locale, 'nav.label')}>
+      {sections.map((s) => (
+        <a href={`#${s.id}`}>{s.label}</a>
+      ))}
+    </nav>
+    {routeKey && <LangSwitch locale={locale} routeKey={routeKey} />}
+  </div>
+)}
+
+<script>
+  // Menu sheet (≤820 px): the page behind is inert while it is open.
+  const button = document.querySelector<HTMLButtonElement>('[data-menu]');
+  const sheet = document.getElementById('site-menu');
+  if (button && sheet) {
+    const behind = [
+      document.querySelector('main'),
+      document.querySelector<HTMLElement>('body > footer'),
+    ];
+    const setOpen = (open: boolean) => {
+      button.setAttribute('aria-expanded', String(open));
+      sheet.toggleAttribute('data-open', open);
+      for (const el of behind) if (el) el.inert = open;
+      if (open) sheet.querySelector('a')?.focus({ preventScroll: true });
+    };
+    button.addEventListener('click', () => setOpen(!sheet.hasAttribute('data-open')));
+    sheet.addEventListener('click', (e) => {
+      if (e.target instanceof Element && e.target.closest('a')) setOpen(false);
+    });
+    addEventListener('keydown', (e) => {
+      if (e.key !== 'Escape' || !sheet.hasAttribute('data-open')) return;
+      setOpen(false);
+      button.focus();
+    });
+    matchMedia('(min-width: 821px)').addEventListener('change', (m) => m.matches && setOpen(false));
+  }
+</script>
+
+<style>
+  .links {
+    display: none;
+    gap: 2px;
+    margin-right: 4px;
+  }
+  .links a {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    min-height: 40px;
+    padding: 0 12px;
+    border-radius: 999px;
+    font-size: 0.875rem;
+    color: var(--muted);
+    text-decoration: none;
+    transition:
+      color 150ms ease-out,
+      background-color 150ms ease-out;
+  }
+  .links a::after {
+    content: '';
+    position: absolute;
+    bottom: 5px;
+    left: 50%;
+    width: 4px;
+    height: 4px;
+    margin-left: -2px;
+    border-radius: 50%;
+    background: currentColor;
+    opacity: 0;
+    transition: opacity 150ms ease-out;
+  }
+  .links a[aria-current] {
+    color: var(--ink);
+  }
+  .links a[aria-current]::after {
+    opacity: 1;
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .links a:hover {
+      color: var(--ink);
+      background: color-mix(in oklch, var(--ink) 8%, transparent);
+    }
+  }
+  .menu-btn {
+    display: inline-grid;
+    place-content: center;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 999px;
+    background: color-mix(in oklch, var(--ink) 8%, transparent);
+    color: var(--ink);
+  }
+  .menu-btn i {
+    display: block;
+    width: 18px;
+    height: 1.5px;
+    background: currentColor;
+    transition: transform 300ms var(--ease-out);
+  }
+  .menu-btn i + i {
+    margin-top: 5px;
+  }
+  .menu-btn[aria-expanded='true'] i:nth-of-type(1) {
+    transform: translateY(3.25px) rotate(45deg);
+  }
+  .menu-btn[aria-expanded='true'] i:nth-of-type(2) {
+    transform: translateY(-3.25px) rotate(-45deg);
+  }
+  .sheet {
+    position: fixed;
+    inset: 0;
+    z-index: 35;
+    display: grid;
+    align-content: start;
+    gap: 8px;
+    padding: 96px 24px 32px;
+    overscroll-behavior: contain;
+    background: color-mix(in oklch, var(--ink-field) 94%, transparent);
+    backdrop-filter: blur(20px);
+    color: var(--ink-field-fg);
+    visibility: hidden;
+    opacity: 0;
+    pointer-events: none;
+    transition:
+      opacity 400ms var(--ease-scene),
+      visibility 0s linear 400ms;
+  }
+  .sheet[data-open] {
+    visibility: visible;
+    opacity: 1;
+    pointer-events: auto;
+    transition:
+      opacity 400ms var(--ease-scene),
+      visibility 0s;
+  }
+  .sheet nav {
+    display: grid;
+    gap: 8px;
+  }
+  /* Also styles the language link, rendered by LangSwitch. */
+  .sheet :global(a) {
+    justify-self: start;
+    padding: 6px 0;
+    font-size: 2.25rem;
+    line-height: 1.15;
+    font-weight: 700;
+    letter-spacing: -0.035em;
+    color: inherit;
+    text-decoration: none;
+    opacity: 0;
+    transform: translateY(24px);
+    transition:
+      opacity 500ms var(--ease-scene),
+      transform 500ms var(--ease-scene);
+  }
+  .sheet[data-open] :global(a) {
+    opacity: 1;
+    transform: none;
+  }
+  .sheet[data-open] :global(a:nth-child(2)) {
+    transition-delay: 60ms;
+  }
+  .sheet[data-open] > :global(a) {
+    transition-delay: 120ms;
+  }
+  @media (min-width: 821px) {
+    .links {
+      display: flex;
+    }
+    .menu-btn,
+    .sheet {
+      display: none;
+    }
+  }
+</style>
