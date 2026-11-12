@@ -1,0 +1,262 @@
+---
+/**
+ * About scene: a 24-hour dial with Querétaro time and working hours, then the bio.
+ * The live parts (time, hand, status) need JS; without it the dial shows the hours only.
+ */
+import type { Locale } from '../../i18n/config';
+import { t } from '../../i18n/ui';
+import { dialPoint, HOURS } from '../../lib/availability';
+import { sampleCopy } from '../../samples/copy';
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const { bio, facts } = sampleCopy[locale].about;
+
+const at = (h: number, r: number) =>
+  dialPoint(h, r)
+    .map((v) => v.toFixed(2))
+    .join(' ');
+// 96 ticks, one per quarter hour; hour ticks are longer.
+const ticks = Array.from({ length: 96 }, (_, i) => ({
+  hour: i % 4 === 0,
+  d: `M${at(i / 4, 168)}L${at(i / 4, i % 4 === 0 ? 157 : 162)}`,
+}));
+const arc = `M${at(HOURS.start, 146)}A146 146 0 0 1 ${at(HOURS.end, 146)}`;
+// Half disc that ends where the arc starts; rotating it reveals the arc (transform only).
+const sweep = `M200 200L${at(HOURS.start, 210)}A210 210 0 0 0 ${at(HOURS.start + 12, 210)}Z`;
+const text = JSON.stringify({
+  now: t(locale, 'about.dialNow'),
+  on: t(locale, 'about.on'),
+  today: t(locale, 'about.today'),
+  tomorrow: t(locale, 'about.tomorrow'),
+  monday: t(locale, 'about.monday'),
+});
+---
+
+<section id="about" class="about" data-tone="ink" aria-labelledby="about-title">
+  <figure id="dial" class="dial" data-text={text}>
+    <svg viewBox="0 0 400 400" role="img" aria-label={t(locale, 'about.dial')}>
+      <defs>
+        <mask id="hours-reveal" maskUnits="userSpaceOnUse" x="0" y="0" width="400" height="400">
+          <path class="sweep" d={sweep} fill="#fff"></path>
+        </mask>
+      </defs>
+      <circle class="ring" cx="200" cy="200" r="168"></circle>
+      <g class="ticks">
+        {ticks.map((tick) => (
+          <path class:list={{ h: tick.hour }} d={tick.d} />
+        ))}
+      </g>
+      <path class="hours" d={arc} mask="url(#hours-reveal)"></path>
+      <text class="hr" x="200" y="81">
+        12
+      </text>
+      <text class="hr" x="324" y="205">
+        18
+      </text>
+      <text class="hr" x="200" y="329">
+        00
+      </text>
+      <text class="hr" x="76" y="205">
+        06
+      </text>
+      <g class="hand">
+        <path d="M200 104V62"></path>
+        <circle cx="200" cy="54" r="6"></circle>
+      </g>
+      <text class="now" x="200" y="194">
+        {['--', ':', '--'].map((part, i) => (
+          <tspan class:list={{ colon: i === 1 }}>{part}</tspan>
+        ))}
+      </text>
+      <text class="where" x="200" y="228">
+        Querétaro, UTC−6
+      </text>
+    </svg>
+    <figcaption>
+      <p class="status">
+        <i aria-hidden="true"></i>
+        <span></span>
+      </p>
+      <p class="note">{t(locale, 'about.hours')}</p>
+    </figcaption>
+  </figure>
+  <div>
+    <h2 id="about-title">{t(locale, 'about.title')}</h2>
+    <p class="bio">{bio}</p>
+    <dl class="facts">
+      {facts.map(([term, detail]) => (
+        <div>
+          <dt>{term}</dt>
+          <dd>{detail}</dd>
+        </div>
+      ))}
+    </dl>
+  </div>
+</section>
+
+<script>
+  import '../../scripts/dial';
+</script>
+
+<style>
+  .about {
+    --pad: clamp(20px, 4vw, 64px);
+    display: grid;
+    gap: 8vh 6vw;
+    align-items: end;
+    padding: 22vh var(--pad);
+  }
+  @media (min-width: 900px) {
+    .about {
+      grid-template-columns: minmax(0, 0.8fr) minmax(0, 1fr);
+    }
+  }
+  .dial {
+    display: grid;
+    gap: 24px;
+    padding: clamp(24px, 3vw, 40px);
+    border-radius: var(--radius-xl);
+    background: var(--surface);
+    box-shadow: inset 0 0 0 1px color-mix(in oklch, var(--ink) 6%, transparent);
+  }
+  svg {
+    display: block;
+    justify-self: center;
+    width: 100%;
+    max-width: 30rem;
+    height: auto;
+    overflow: visible;
+  }
+  .ring {
+    fill: none;
+    stroke: var(--line);
+  }
+  .ticks path {
+    stroke: var(--line);
+    stroke-linecap: round;
+  }
+  .ticks .h {
+    stroke: var(--muted);
+    stroke-width: 1.5;
+  }
+  .hours {
+    fill: none;
+    stroke: var(--ink-field-hours);
+    stroke-width: 8;
+    stroke-linecap: round;
+  }
+  .hr,
+  .where {
+    fill: var(--muted);
+    font-weight: 500;
+    text-anchor: middle;
+  }
+  .hr {
+    font-size: 15px;
+    font-variant-numeric: tabular-nums;
+  }
+  .where {
+    font-size: 16px;
+  }
+  .now {
+    fill: var(--ink);
+    font-size: 64px;
+    font-weight: 650;
+    letter-spacing: -0.03em;
+    text-anchor: middle;
+    font-variant-numeric: tabular-nums;
+  }
+  .colon {
+    font-variant-numeric: normal;
+  }
+  .hand,
+  .sweep {
+    transform-box: view-box;
+    transform-origin: 200px 200px;
+  }
+  .hand {
+    transform: rotate(180deg);
+  }
+  .hand path {
+    stroke: var(--ink);
+    stroke-width: 2;
+    stroke-linecap: round;
+  }
+  .hand circle {
+    fill: var(--ink);
+    stroke: var(--surface);
+    stroke-width: 3;
+  }
+  /* Arc span (HOURS: 9 h of 24 = 135°) + 6° so the round end cap shows. dial.ts animates from 0. */
+  .sweep {
+    transform: rotate(141deg);
+  }
+  .dial[data-intro] .sweep {
+    transform: rotate(0deg);
+  }
+  figcaption {
+    display: grid;
+    gap: 8px;
+  }
+  .status {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 1.125rem;
+    font-weight: 600;
+  }
+  .status i {
+    flex: none;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    box-shadow: inset 0 0 0 1.5px var(--muted);
+  }
+  .status[data-on] i {
+    background: var(--ink-field-hours);
+    box-shadow: none;
+  }
+  .note {
+    padding-left: 22px;
+    font-size: 0.95rem;
+    color: var(--muted);
+  }
+  h2 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--muted);
+  }
+  .bio {
+    max-width: 24ch;
+    margin-top: 18px;
+    font-size: clamp(1.6rem, 1rem + 1.9vw, 2.9rem);
+    line-height: 1.15;
+    font-weight: 600;
+    letter-spacing: -0.025em;
+  }
+  .facts {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 24px 32px;
+    max-width: 34rem;
+    margin-top: 48px;
+  }
+  dt {
+    font-size: 0.875rem;
+    color: var(--muted);
+  }
+  dd {
+    margin-top: 4px;
+    font-size: 1.1rem;
+    font-weight: 500;
+  }
+  :global(html:not(.js)) .hand,
+  :global(html:not(.js)) .now,
+  :global(html:not(.js)) .status {
+    display: none;
+  }
+</style>

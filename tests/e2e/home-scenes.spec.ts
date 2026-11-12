@@ -32,6 +32,15 @@ for (const width of [320, 390, 1280, 1920]) {
   });
 }
 
+test('about dial shows Querétaro time and when work resumes', async ({ page }) => {
+  await page.clock.setFixedTime(new Date('2026-11-14T18:30:00Z')); // Saturday 12:30 in Querétaro
+  await page.goto('/');
+  const dial = page.locator('#dial');
+  await expect(dial.locator('.now')).toHaveText('12:30');
+  await expect(dial.locator('.status')).toHaveText('Fuera de horario. Vuelvo el lunes a las 9:00.');
+  await expect(dial.locator('.status')).not.toHaveAttribute('data-on');
+});
+
 test('reduced motion: no pinning, statement fully lit', async ({ page }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.goto('/');
