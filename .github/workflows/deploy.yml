@@ -35,7 +35,8 @@ jobs:
           export GIT_SSH_COMMAND="ssh -i ${key} -o IdentitiesOnly=yes -o UserKnownHostsFile=${hosts}"
           remote="git@github.com:${REPO}.git"
           git init -q repo
-          git -C repo fetch -q --depth=1 "${remote}" "${SHA}"
+          # Full history of both refs: push needs the production tip to check the fast-forward.
+          git -C repo fetch -q "${remote}" "${SHA}" refs/heads/production
           # No --force: the ruleset also rejects anything that is not a fast-forward.
           git -C repo push "${remote}" "${SHA}:refs/heads/production"
 
