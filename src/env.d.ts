@@ -2,3 +2,8 @@
 declare const __BUILD_SHA__: string;
 /** Build date, ISO format (YYYY-MM-DD). */
 declare const __BUILD_DATE__: string;
+
+/** Worker bindings and secrets, read lazily in Actions. Typed where used. */
+declare module 'cloudflare:workers' {
+  export const env: unknown;
+}
