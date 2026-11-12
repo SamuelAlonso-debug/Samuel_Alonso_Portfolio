@@ -106,6 +106,7 @@ test('contact only with a booking link; one amber action per view', async ({ pag
   if (!booking) return;
   await expect(contact.locator('.orb')).toHaveAttribute('href', /^https:\/\//);
   await expect(contact.locator('.clock')).toHaveText(/Querétaro son las \d\d:\d\d/);
+  await expect(contact.locator('#contact-form')).toBeVisible();
   const body = page.locator('body');
   await expect(body).toHaveAttribute('data-primary-visible', '');
   const place = (id: string, at: number) =>

@@ -1,0 +1,184 @@
+---
+/**
+ * Contact form, sent through the `contact` Action. Needs JS and a Turnstile site key; renders
+ * nothing without the key and stays hidden without JS. `compact` (home scene): name, email and
+ * message only, with an outlined button because the booking orb is the view's primary.
+ */
+import { PUBLIC_TURNSTILE_SITE_KEY as siteKey } from 'astro:env/client';
+import type { Locale } from '../i18n/config';
+import { routes } from '../i18n/routes';
+import { topics } from '../lib/contact';
+
+interface Props {
+  locale: Locale;
+  compact?: boolean;
+  class?: string;
+}
+
+const { locale, compact = false, class: className } = Astro.props;
+const email = 'samuelalonsodv@gmail.com';
+const turnstile = 'https://challenges.cloudflare.com';
+
+if (siteKey) {
+  Astro.csp?.insertScriptResource(turnstile);
+  Astro.csp?.insertDirective(`frame-src ${turnstile}`);
+}
+
+const copy = {
+  es: {
+    title: '¿Prefieres dejar un mensaje?',
+    name: 'Nombre',
+    email: 'Correo',
+    company: 'Empresa (opcional)',
+    topic: 'Tema',
+    topics: {
+      review: 'Revisión técnica',
+      project: 'Proyecto nuevo',
+      support: 'Soporte o mejora',
+      other: 'Otro',
+    },
+    message: 'Mensaje',
+    send: 'Enviar mensaje',
+    sending: 'Enviando…',
+    privacy: 'Uso tus datos solo para responderte. Detalles en el',
+    privacyLink: 'aviso de privacidad',
+    sent: 'Mensaje enviado. Te respondo pronto.',
+    errors: {
+      name: 'Escribe tu nombre (2 a 100 caracteres).',
+      email: 'Escribe un correo válido.',
+      company: 'El nombre de la empresa es demasiado largo.',
+      topic: 'Elige un tema.',
+      message: 'El mensaje debe tener entre 20 y 4000 caracteres.',
+      turnstile: 'Completa la verificación antes de enviar.',
+      rate: 'Demasiados envíos. Espera un minuto e inténtalo de nuevo.',
+      failed: `No se pudo enviar. Escríbeme a ${email}.`,
+    },
+  },
+  en: {
+    title: 'Prefer to leave a message?',
+    name: 'Name',
+    email: 'Email',
+    company: 'Company (optional)',
+    topic: 'Topic',
+    topics: {
+      review: 'Technical review',
+      project: 'New project',
+      support: 'Support or improvement',
+      other: 'Other',
+    },
+    message: 'Message',
+    send: 'Send message',
+    sending: 'Sending…',
+    privacy: 'I use your data only to reply. Details in the',
+    privacyLink: 'privacy notice',
+    sent: 'Message sent. I will reply soon.',
+    errors: {
+      name: 'Enter your name (2 to 100 characters).',
+      email: 'Enter a valid email.',
+      company: 'The company name is too long.',
+      topic: 'Pick a topic.',
+      message: 'The message must be 20 to 4000 characters.',
+      turnstile: 'Complete the check before sending.',
+      rate: 'Too many submissions. Wait a minute and try again.',
+      failed: `It could not be sent. Email me at ${email}.`,
+    },
+  },
+}[locale];
+const field =
+  'mt-2 block w-full rounded-md border border-muted/40 bg-transparent px-3 py-2.5 text-lg';
+const button = compact
+  ? 'border border-current hover:bg-ink/10'
+  : 'bg-action text-action-ink hover:bg-action-hover';
+---
+
+{siteKey && (
+  <form
+    id="contact-form"
+    class:list={['grid gap-6', className]}
+    novalidate
+    hidden
+    aria-labelledby={compact ? 'contact-form-title' : undefined}
+    data-errors={JSON.stringify(copy.errors)}
+    data-sending={copy.sending}
+    data-sent={copy.sent}
+  >
+    {compact && (
+      <h3 id="contact-form-title" class="text-xl font-semibold">
+        {copy.title}
+      </h3>
+    )}
+    <label class="block">
+      {copy.name}
+      <input class={field} name="name" autocomplete="name" required minlength="2" maxlength="100" />
+    </label>
+    <label class="block">
+      {copy.email}
+      <input
+        class={field}
+        name="email"
+        type="email"
+        autocomplete="email"
+        required
+        maxlength="254"
+      />
+    </label>
+    {compact ? (
+      <input type="hidden" name="topic" value="other" />
+    ) : (
+      <>
+        <label class="block">
+          {copy.company}
+          <input class={field} name="company" autocomplete="organization" maxlength="100" />
+        </label>
+        <label class="block">
+          {copy.topic}
+          <select class={field} name="topic" required>
+            {topics.map((topic) => (
+              <option value={topic}>{copy.topics[topic]}</option>
+            ))}
+          </select>
+        </label>
+      </>
+    )}
+    <label class="block">
+      {copy.message}
+      <textarea
+        class={field}
+        name="message"
+        rows={compact ? 4 : 6}
+        required
+        minlength="20"
+        maxlength="4000"
+      />
+    </label>
+    {/* Honeypot: off-screen and out of the tab order. */}
+    <label class="sr-only" aria-hidden="true">
+      Website
+      <input name="website" tabindex="-1" autocomplete="off" />
+    </label>
+    <div
+      class="cf-turnstile"
+      data-sitekey={siteKey}
+      data-language={locale}
+      data-theme={compact ? 'dark' : 'auto'}
+    ></div>
+    <p class="text-sm text-muted">
+      {copy.privacy}{' '}
+      <a class="underline" href={routes.privacy[locale]}>
+        {copy.privacyLink}
+      </a>
+      .
+    </p>
+    <div>
+      <button type="submit" class:list={['rounded-full px-6 py-3 font-semibold', button]}>
+        {copy.send}
+      </button>
+    </div>
+    <p class="status text-lg" role="status" aria-live="polite"></p>
+  </form>
+)}
+{siteKey && <script is:inline src={`${turnstile}/turnstile/v0/api.js`} async defer></script>}
+
+<script>
+  import '../scripts/contact-form';
+</script>

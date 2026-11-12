@@ -1,10 +1,10 @@
 ---
 /**
  * Contact scene: the ink field rises with a curve that flattens (scenes.ts), the magnetic
- * "Book a call" orb and Querétaro time (contact.ts). Rendered only with a booking link.
+ * "Book a call" orb, Querétaro time (contact.ts) and the form. Rendered only with a booking link.
  */
+import ContactForm from '../../components/ContactForm.astro';
 import type { Locale } from '../../i18n/config';
-import { routes } from '../../i18n/routes';
 import { t } from '../../i18n/ui';
 import { sampleCopy } from '../../samples/copy';
 
@@ -14,6 +14,7 @@ interface Props {
 }
 
 const { locale, booking } = Astro.props;
+const email = 'samuelalonsodv@gmail.com';
 ---
 
 <section
@@ -24,16 +25,24 @@ const { locale, booking } = Astro.props;
   aria-labelledby="contact-title"
 >
   <div class="curve" aria-hidden="true"></div>
-  <h2 id="contact-title">{t(locale, 'contact.title')}</h2>
-  <p class="lead">{sampleCopy[locale].contact}</p>
-  <div class="row">
-    <a class="orb magnetic" href={booking}>
-      <span>{t(locale, 'cta.book')}</span>
-    </a>
-    <p class="clock" data-text={t(locale, 'contact.clock')}></p>
-    <a class="write" href={routes.contact[locale]}>
-      {t(locale, 'contact.write')}
-    </a>
+  <div class="inner">
+    <div>
+      <h2 id="contact-title">{t(locale, 'contact.title')}</h2>
+      <p class="lead">{sampleCopy[locale].contact}</p>
+      <div class="row">
+        <a class="orb magnetic" href={booking}>
+          <span>{t(locale, 'cta.book')}</span>
+        </a>
+        <div class="reach">
+          <p class="reach-label">{t(locale, 'contact.write')}</p>
+          <a class="mail" href={`mailto:${email}`}>
+            {email}
+          </a>
+          <p class="clock" data-text={t(locale, 'contact.clock')}></p>
+        </div>
+      </div>
+    </div>
+    <ContactForm locale={locale} compact />
   </div>
 </section>
 
@@ -69,6 +78,17 @@ const { locale, booking } = Astro.props;
   }
   :global(html.js) .curve {
     display: block;
+  }
+  .inner {
+    position: relative;
+    display: grid;
+    gap: 64px;
+  }
+  @media (min-width: 1000px) {
+    .inner {
+      grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+      align-items: start;
+    }
   }
   h2 {
     max-width: 11ch;
@@ -117,9 +137,20 @@ const { locale, booking } = Astro.props;
       background: var(--action-hover);
     }
   }
-  .write {
-    font-size: 1.125rem;
+  .reach {
+    display: grid;
+    gap: 4px;
+  }
+  .reach-label {
+    font-size: 0.875rem;
+    color: var(--muted);
+  }
+  .mail {
+    font-size: clamp(1.25rem, 1rem + 0.8vw, 1.6rem);
+    font-weight: 600;
     text-decoration: underline;
+    text-underline-offset: 6px;
+    overflow-wrap: anywhere;
   }
   .clock {
     font-size: 0.95rem;
