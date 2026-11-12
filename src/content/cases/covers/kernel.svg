@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" font-family="ui-monospace, monospace">
+  <rect width="800" height="500" rx="12" fill="#0d1117"/>
+  <text x="28" y="40" font-size="15" fill="#7d8590">qemu: minikernel-0.4.2</text>
+  <path d="M0 58H800" stroke="#21262d"/>
+  <g font-size="18" fill="#c9d1d9">
+    <text x="28" y="100">$ sha256sum -c minikernel-0.4.2.iso.sha256</text>
+    <text x="28" y="132">minikernel-0.4.2.iso: <tspan fill="#3fb950">OK</tspan></text>
+    <text x="28" y="164">$ qemu-system-x86_64 -cdrom minikernel-0.4.2.iso</text>
+    <text x="28" y="196">[ 0.000] MiniKernel 0.4.2</text>
+    <text x="28" y="228">[ 0.012] memoria: 128 MiB</text>
+    <text x="28" y="260">[ 0.031] planificador: round robin, 4 tareas</text>
+    <text x="28" y="292">[ 0.047] shell lista</text>
+    <text x="28" y="324">$ make test</text>
+    <text x="28" y="356">48 pruebas, 48 <tspan fill="#3fb950">OK</tspan></text>
+  </g>
+</svg>

@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" font-family="system-ui, sans-serif">
+  <rect width="800" height="500" rx="12" fill="#f6f8fa"/>
+  <text x="32" y="52" font-size="26" font-weight="700" fill="#14202b">SEA</text>
+  <text x="430" y="50" font-size="17" fill="#14202b" font-weight="700">Inventario</text>
+  <text x="535" y="50" font-size="17" fill="#5b6b78">Ventas</text>
+  <text x="610" y="50" font-size="17" fill="#5b6b78">Gastos</text>
+  <text x="690" y="50" font-size="17" fill="#5b6b78">Clientes</text>
+  <path d="M32 74H768" stroke="#dde3e8"/>
+  <g font-size="17" fill="#5b6b78"><text x="32" y="108">Producto</text><text x="470" y="108">Exist.</text><text x="600" y="108">Estado</text></g>
+  <g font-size="18" fill="#14202b">
+    <text x="32" y="152">Café de olla 1 kg</text><text x="470" y="152">14</text><circle cx="606" cy="146" r="6" fill="#2f9e5b"/><text x="622" y="152">Bien</text>
+    <text x="32" y="196">Piloncillo 500 g</text><text x="470" y="196">3</text><path d="M606 182l7 12h-14z" fill="#d9822b"/><text x="622" y="196">Bajo</text>
+    <text x="32" y="240">Canela en raja 250 g</text><text x="470" y="240">27</text><circle cx="606" cy="234" r="6" fill="#2f9e5b"/><text x="622" y="240">Bien</text>
+    <text x="32" y="284">Chocolate de mesa</text><text x="470" y="284">0</text><rect x="600" y="278" width="12" height="12" fill="#c8402f"/><text x="622" y="284">Agotado</text>
+  </g>
+  <path d="M32 440l70-14 70 8 70-22 70 10 70-26 70 12 70-30 70 6 70-24 70 4" fill="none" stroke="#1f6f7a" stroke-width="3"/>
+</svg>
