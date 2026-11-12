@@ -1,0 +1,113 @@
+---
+/** Privacy notice (LFPDPPP). Lists every processor. Update `updated` with every change. */
+import type { Locale } from '../i18n/config';
+import { routes } from '../i18n/routes';
+import { t } from '../i18n/ui';
+import Base from '../layouts/Base.astro';
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const email = 'samuelalonsodev@gmail.com';
+const updated = '2026-11-12';
+
+const copy = {
+  es: {
+    lead: 'Qué datos personales trato en este sitio, para qué y cómo ejercer tus derechos.',
+    updatedLabel: 'Última actualización',
+    sections: [
+      [
+        'Responsable',
+        `Samuel Alonso Hernández, ingeniero de software con domicilio en Querétaro, Qro., México. Contacto: ${email}.`,
+      ],
+      [
+        'Datos que trato y para qué',
+        'Este sitio no tiene cuentas de usuario. Si me escribes, trato tu nombre, tu correo y lo que me cuentes, solo para responderte y, si lo acordamos, preparar una propuesta. Si agendas una llamada, Cal.com recibe tu nombre, tu correo y el horario elegido para organizarla.',
+      ],
+      [
+        'Analítica sin cookies',
+        'Cloudflare Web Analytics cuenta visitas y mide el rendimiento de las páginas. No usa cookies ni identifica a visitantes individuales.',
+      ],
+      [
+        'Cookies',
+        'Este sitio no usa cookies. Tu preferencia de tema claro u oscuro se guarda en el almacenamiento local de tu navegador y no sale de tu equipo.',
+      ],
+      [
+        'Proveedores',
+        'Cloudflare aloja el sitio y la analítica. Cal.com gestiona la agenda de llamadas. Google (Gmail) aloja el correo. Cada uno trata los datos solo para prestar su servicio. No vendo ni comparto tus datos con nadie más.',
+      ],
+      [
+        'Conservación',
+        'Conservo tus mensajes hasta dos años después del último contacto, salvo que me pidas borrarlos antes.',
+      ],
+      [
+        'Tus derechos (ARCO)',
+        `Puedes acceder a tus datos, rectificarlos, cancelarlos u oponerte a su uso, y revocar tu consentimiento. Escribe a ${email} con tu nombre, el derecho que ejerces y los datos a los que se refiere. Respondo en un máximo de 20 días hábiles.`,
+      ],
+      [
+        'Cambios',
+        'Cualquier cambio a este aviso se publica en esta página, con su fecha de actualización.',
+      ],
+    ],
+  },
+  en: {
+    lead: 'What personal data this site handles, why, and how to exercise your rights.',
+    updatedLabel: 'Last updated',
+    sections: [
+      [
+        'Data controller',
+        `Samuel Alonso Hernández, software engineer based in Querétaro, Mexico. Contact: ${email}.`,
+      ],
+      [
+        'Data I handle and why',
+        'This site has no user accounts. If you write to me, I handle your name, your email and what you tell me, only to reply and, if we agree, to prepare a proposal. If you book a call, Cal.com receives your name, your email and the time you pick to set it up.',
+      ],
+      [
+        'Cookieless analytics',
+        'Cloudflare Web Analytics counts visits and measures page performance. It sets no cookies and does not identify individual visitors.',
+      ],
+      [
+        'Cookies',
+        'This site sets no cookies. Your light or dark theme choice is saved in your browser’s local storage and never leaves your device.',
+      ],
+      [
+        'Providers',
+        'Cloudflare hosts the site and the analytics. Cal.com runs call booking. Google (Gmail) hosts email. Each one handles data only to provide its service. I never sell or share your data with anyone else.',
+      ],
+      [
+        'Retention',
+        'I keep your messages for up to two years after our last contact, unless you ask me to delete them sooner.',
+      ],
+      [
+        'Your rights (ARCO)',
+        `You can access, correct or delete your data, object to its use, and withdraw your consent. Email ${email} with your name, the right you are exercising and the data it concerns. I reply within 20 business days.`,
+      ],
+      ['Changes', 'Any change to this notice is published on this page with its update date.'],
+    ],
+  },
+}[locale];
+const title = t(locale, 'privacy.title');
+---
+
+<Base
+  locale={locale}
+  paths={routes.privacy}
+  title={`${title} · Samuel Alonso`}
+  description={copy.lead}
+>
+  <div class="mx-auto max-w-300 px-5 pt-32 pb-24 sm:px-8 md:pt-40">
+    <h1 class="text-4xl font-bold tracking-tight">{title}</h1>
+    <p class="mt-5 max-w-[48ch] text-xl text-muted">{copy.lead}</p>
+    <p class="mt-3 text-sm text-muted">
+      {copy.updatedLabel}: <time datetime={updated}>{updated}</time>
+    </p>
+    {copy.sections.map(([heading, body]) => (
+      <section class="mt-14 max-w-[62ch]">
+        <h2 class="text-2xl font-semibold tracking-tight">{heading}</h2>
+        <p class="mt-3 text-lg">{body}</p>
+      </section>
+    ))}
+  </div>
+</Base>

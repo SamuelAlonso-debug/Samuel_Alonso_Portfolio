@@ -8,6 +8,8 @@ const pages = [
   { path: '/en/', lang: 'en', switchTo: '/' },
   { path: '/como-esta-hecho/', lang: 'es-MX', switchTo: '/en/how-its-made/' },
   { path: '/en/how-its-made/', lang: 'en', switchTo: '/como-esta-hecho/' },
+  { path: '/aviso-de-privacidad/', lang: 'es-MX', switchTo: '/en/privacy/' },
+  { path: '/en/privacy/', lang: 'en', switchTo: '/aviso-de-privacidad/' },
   ...(withCases
     ? ([
         { path: '/casos/sea/', lang: 'es-MX', switchTo: '/en/work/sea/' },
