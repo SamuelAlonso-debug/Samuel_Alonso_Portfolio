@@ -225,6 +225,9 @@ importers:
       eslint-plugin-jsx-a11y-x:
         specifier: ^0.2.0
         version: 0.2.0(eslint@10.14.0(jiti@2.7.0)(supports-color@10.2.2))
+      fontkitten:
+        specifier: 1.0.3
+        version: 1.0.3
       globals:
         specifier: ^17.14.0
         version: 17.14.0

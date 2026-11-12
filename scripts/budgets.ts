@@ -43,7 +43,12 @@ function check(html: string): string[] {
   );
   const js = new Set<string>();
   for (const file of local.filter((f) => f.endsWith('.js'))) jsGraph(file, js);
-  const inline = [...markup.matchAll(/<script(?![^>]*\bsrc=)[^>]*>([\s\S]*?)<\/script>/g)]
+  // Inline scripts, except JSON-LD data blocks.
+  const inline = [
+    ...markup.matchAll(
+      /<script(?![^>]*\b(?:src=|type="application\/ld\+json"))[^>]*>([\s\S]*?)<\/script>/g,
+    ),
+  ]
     .map(([, body]) => body ?? '')
     .join('');
   const jsBytes = [...js].reduce((sum, f) => sum + size(f), inline ? gz(inline) : 0);

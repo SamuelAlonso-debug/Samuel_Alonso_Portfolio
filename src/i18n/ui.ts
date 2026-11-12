@@ -2,6 +2,7 @@ import type { Locale } from './config';
 
 const es = {
   'meta.siteName': 'Samuel Alonso',
+  'meta.jobTitle': 'Ingeniero de software',
   'meta.home.title': 'Samuel Alonso · Ingeniero de software',
   'meta.home.description':
     'Ingeniero de software en Querétaro, México. Arquitectura, UX, entrega y operación de software. Sitio en construcción.',
@@ -59,6 +60,7 @@ type UIKey = keyof typeof es;
 // The type annotation forces EN to have exactly the ES keys.
 const en: Record<UIKey, string> = {
   'meta.siteName': 'Samuel Alonso',
+  'meta.jobTitle': 'Software engineer',
   'meta.home.title': 'Samuel Alonso · Software engineer',
   'meta.home.description':
     'Software engineer based in Querétaro, Mexico. Architecture, UX, delivery and operations. Site under construction.',

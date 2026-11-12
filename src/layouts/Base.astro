@@ -4,7 +4,7 @@ import { Font } from 'astro:assets';
 import SiteFooter from '../components/SiteFooter.astro';
 import SiteHeader, { type Section } from '../components/SiteHeader.astro';
 import { htmlLang, locales, ogLocale, type Locale } from '../i18n/config';
-import type { Paths } from '../i18n/routes';
+import { routes, type Paths } from '../i18n/routes';
 import { t } from '../i18n/ui';
 import { sha256Base64, THEME_INIT_SCRIPT } from '../lib/theme-init';
 
@@ -23,15 +23,68 @@ interface Props {
   sections?: Section[] | undefined;
   /** Primary action in the header. */
   cta?: Section | undefined;
+  /** Case pages: adds an Article to the JSON-LD. */
+  article?: { headline: string } | undefined;
 }
 
-const { locale, title, description, paths, noindex = false, tone, sections, cta } = Astro.props;
+const {
+  locale,
+  title,
+  description,
+  paths,
+  noindex = false,
+  tone,
+  sections,
+  cta,
+  article,
+} = Astro.props;
 
 const canonical = paths ? new URL(paths[locale], Astro.site).href : undefined;
 const alternates = paths
   ? locales.map((l) => ({ hreflang: htmlLang[l], href: new URL(paths[l], Astro.site).href }))
   : [];
 const xDefault = paths ? new URL(paths.es, Astro.site).href : undefined;
+
+// Built after the pages by the og-images integration (src/lib/og.ts).
+const ogImage = new URL(`/og/${locale}.png`, Astro.site).href;
+const home = new URL(routes.home[locale], Astro.site).href;
+const person = { '@id': new URL('/#person', Astro.site).href };
+const graph = [
+  {
+    '@type': 'Person',
+    ...person,
+    name: 'Samuel Alonso Hernández',
+    jobTitle: t(locale, 'meta.jobTitle'),
+    address: { '@type': 'PostalAddress', addressLocality: 'Querétaro', addressCountry: 'MX' },
+    url: home,
+    sameAs: ['https://github.com/SamuelAlonso-debug'],
+  },
+  {
+    '@type': 'WebSite',
+    name: t(locale, 'meta.siteName'),
+    url: home,
+    inLanguage: htmlLang[locale],
+    author: person,
+  },
+  ...(article
+    ? [
+        {
+          '@type': 'Article',
+          headline: article.headline,
+          description,
+          url: canonical,
+          image: ogImage,
+          inLanguage: htmlLang[locale],
+          author: person,
+        },
+      ]
+    : []),
+];
+// `<` escaped so content can never close the script element.
+const jsonLd = JSON.stringify({ '@context': 'https://schema.org', '@graph': graph }).replace(
+  /</g,
+  '\\u003c',
+);
 ---
 
 <!doctype html>
@@ -59,7 +112,12 @@ const xDefault = paths ? new URL(paths.es, Astro.site).href : undefined;
     <meta property="og:description" content={description} />
     <meta property="og:locale" content={ogLocale[locale]} />
     {canonical && <meta property="og:url" content={canonical} />}
-
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content={`Samuel Alonso. ${t(locale, 'home.role')}`} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <script is:inline type="application/ld+json" set:html={jsonLd} />
     <Font cssVariable="--font-schibsted" preload />
     <Font cssVariable="--font-plex-mono" />
 
