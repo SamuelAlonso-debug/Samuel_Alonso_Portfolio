@@ -145,3 +145,11 @@
     scroll-behavior: auto !important;
   }
 }
+
+/* Theme switch: no transitions for one frame, so the swap is a single repaint (ThemeToggle). */
+html[data-theme-switching],
+html[data-theme-switching] *,
+html[data-theme-switching] *::before,
+html[data-theme-switching] *::after {
+  transition: none !important;
+}
