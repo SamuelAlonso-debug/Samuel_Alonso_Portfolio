@@ -34,6 +34,15 @@ for (const { path, lang, switchTo } of pages) {
       await expect(page.locator('h1')).toHaveCount(1);
     });
 
+    test('shares an OG image per locale and Person JSON-LD', async ({ page, request }) => {
+      await page.goto(path);
+      const og = await page.locator('meta[property="og:image"]').getAttribute('content');
+      expect(og).toMatch(lang === 'en' ? /\/og\/en\.png$/ : /\/og\/es\.png$/);
+      expect((await request.get(new URL(og ?? '').pathname)).status()).toBe(200);
+      const ld = await page.locator('script[type="application/ld+json"]').textContent();
+      expect(JSON.parse(ld ?? '{}')['@graph'][0]['@type']).toBe('Person');
+    });
+
     test('ships the Astro-generated CSP', async ({ page }) => {
       await page.goto(path);
       const csp = await page

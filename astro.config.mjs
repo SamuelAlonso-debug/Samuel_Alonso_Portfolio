@@ -4,6 +4,7 @@ import cloudflare from '@astrojs/cloudflare';
 import mdx from '@astrojs/mdx';
 import sitemap from '@astrojs/sitemap';
 import tailwindcss from '@tailwindcss/vite';
+import { ogImages } from './src/lib/og.ts';
 
 // SITE_URL comes from the build environment (Workers Builds / CI). The default is for local dev only.
 const site = process.env.SITE_URL ?? 'http://localhost:4321';
@@ -45,6 +46,7 @@ export default defineConfig({
 
   integrations: [
     mdx(),
+    ogImages(),
     sitemap({
       i18n: { defaultLocale: 'es', locales: { es: 'es-MX', en: 'en' } },
     }),
