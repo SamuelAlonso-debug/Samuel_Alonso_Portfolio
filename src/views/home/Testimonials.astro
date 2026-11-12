@@ -1,0 +1,70 @@
+---
+/**
+ * Testimonials scene: pinned, one quote leaves as the next arrives (scenes.ts).
+ * Stacked with one quote, reduced motion, no JS, or a quote taller than the screen.
+ * No section while there are no testimonials.
+ */
+import type { CollectionEntry } from 'astro:content';
+import Quote from '../../components/Quote.astro';
+import type { Locale } from '../../i18n/config';
+import { t } from '../../i18n/ui';
+
+interface Props {
+  locale: Locale;
+  testimonials: CollectionEntry<'testimonials'>[];
+}
+
+const { locale, testimonials } = Astro.props;
+---
+
+{testimonials.length > 0 && (
+  <section id="testimonials" class="voices" data-tone="paper" aria-labelledby="testimonials-title">
+    <div class="stage">
+      <h2 id="testimonials-title">{t(locale, 'testimonials.title')}</h2>
+      <div class="quotes">
+        {testimonials.map((entry) => (
+          <Quote entry={entry} locale={locale} />
+        ))}
+      </div>
+    </div>
+  </section>
+)}
+
+<style>
+  .voices {
+    --pad: clamp(20px, 4vw, 64px);
+    position: relative;
+  }
+  .stage {
+    padding: 20vh var(--pad);
+  }
+  .quotes {
+    display: grid;
+    gap: 12vh;
+    margin-top: 8vh;
+  }
+  h2 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--muted);
+  }
+  /* scenes.ts adds .pinned when every quote fits and sets the height: run + 100vh. */
+  .pinned .stage {
+    position: sticky;
+    top: 0;
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr);
+    height: 100svh;
+    padding-block: 14vh 8vh;
+    overflow: hidden;
+  }
+  .pinned .quotes {
+    align-content: center;
+    align-items: center;
+    margin-top: 0;
+  }
+  .pinned .quotes > :global(*) {
+    grid-area: 1 / 1;
+    will-change: transform, opacity;
+  }
+</style>

@@ -2,6 +2,7 @@
  * Scroll scenes on native scroll. One rAF loop eases each pinned scene toward its
  * scroll progress and stops when settled. Reduced motion: final states, no loop.
  */
+import { quoteAt, quotesRun } from '../lib/quotes';
 import { panelAt, trackRun } from '../lib/track';
 
 const clamp = (v: number, min = 0, max = 1) => Math.min(max, Math.max(min, v));
@@ -173,6 +174,41 @@ if (cases && track) {
       if (count) count.textContent = String(panelAt(p, panels.length)).padStart(2, '0');
       bar?.style.setProperty('transform', `scaleX(${p})`);
     },
+  });
+}
+
+// Testimonials: one quote leaves as the next arrives. Stacked with one quote, with reduced
+// motion, or when a quote does not fit the screen.
+const voices = byId('testimonials');
+const quotes = [...(voices?.querySelectorAll<HTMLElement>('.quote') ?? [])];
+const quoteBox = quotes[0]?.parentElement;
+if (voices && quoteBox && quotes.length > 1) {
+  const pinned = () => voices.classList.contains('pinned');
+  scenes.push({
+    el: voices,
+    cur: 0,
+    measure: () => {
+      voices.classList.toggle('pinned', !reduce.matches);
+      const fits = pinned() && quotes.every((q) => q.offsetHeight <= quoteBox.clientHeight);
+      voices.classList.toggle('pinned', fits);
+      voices.style.height = fits ? `${quotesRun(quotes.length) + 100}vh` : '';
+      if (!fits) for (const q of quotes) q.style.opacity = q.style.transform = '';
+    },
+    update: (p) => {
+      if (!pinned()) return;
+      quotes.forEach((q, i) => {
+        const { opacity, y } = quoteAt(p, quotes.length, i);
+        q.style.opacity = String(opacity);
+        q.style.transform = `translate3d(0, ${y}px, 0)`;
+      });
+    },
+  });
+  // A focused link (author profile) scrolls its quote into view.
+  voices.addEventListener('focusin', (e) => {
+    const i = quotes.findIndex((q) => q.contains(e.target as Node));
+    if (i < 0 || !pinned()) return;
+    const top = scrollY + voices.getBoundingClientRect().top;
+    scrollTo(0, top + (voices.offsetHeight - innerHeight) * ((i + 0.5) / quotes.length));
   });
 }
 
