@@ -124,10 +124,10 @@ if (booking && siteKey) allowTurnstile(Astro.csp);
 
 <style>
   /* Off-screen, non-pinned scenes skip style, layout and paint until they near the viewport.
-     Pinned scenes measure their content (scenes.ts), so they always render. "auto" keeps the
+     Pinned scenes measure their content (scenes.ts) and How I work fades rows in on
+     intersection, so they always render. "auto" keeps the
      last real size, so the scrollbar settles after the first pass. */
   :global(#about),
-  :global(#how),
   :global(#contact) {
     content-visibility: auto;
     contain-intrinsic-size: auto 100svh;
