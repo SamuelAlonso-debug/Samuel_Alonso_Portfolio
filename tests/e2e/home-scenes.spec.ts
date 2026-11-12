@@ -53,6 +53,23 @@ test('how I work: petrol field, rows enter once in view', async ({ page }) => {
   }
 });
 
+test('header links reach their scene; the menu sheet closes on navigation', async ({ page }) => {
+  await page.goto('/');
+  const menu = page.locator('[data-menu]');
+  if (await menu.isVisible()) {
+    await menu.click();
+    await expect(menu).toHaveAttribute('aria-expanded', 'true');
+    await expect(page.locator('main')).toHaveJSProperty('inert', true);
+    await page.locator('#site-menu').getByRole('link', { name: 'Cómo trabajo' }).click();
+    await expect(menu).toHaveAttribute('aria-expanded', 'false');
+    await expect(page.locator('main')).toHaveJSProperty('inert', false);
+  } else {
+    await page.locator('header').getByRole('link', { name: 'Cómo trabajo' }).click();
+    await expect(page.locator('header a[href="#how"]')).toHaveAttribute('aria-current', 'location');
+  }
+  await expect(page).toHaveURL(/#how$/);
+});
+
 test('reduced motion: no pinning, statement fully lit', async ({ page }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.goto('/');
