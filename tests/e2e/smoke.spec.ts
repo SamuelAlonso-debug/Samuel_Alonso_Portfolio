@@ -10,6 +10,8 @@ const pages = [
   { path: '/en/how-its-made/', lang: 'en', switchTo: '/como-esta-hecho/' },
   { path: '/aviso-de-privacidad/', lang: 'es-MX', switchTo: '/en/privacy/' },
   { path: '/en/privacy/', lang: 'en', switchTo: '/aviso-de-privacidad/' },
+  { path: '/contacto/', lang: 'es-MX', switchTo: '/en/contact/' },
+  { path: '/en/contact/', lang: 'en', switchTo: '/contacto/' },
   ...(withCases
     ? ([
         { path: '/casos/sea/', lang: 'es-MX', switchTo: '/en/work/sea/' },
@@ -108,4 +110,31 @@ test('unknown route returns 404 with the custom page', async ({ page }) => {
   const response = await page.goto('/no-existe/');
   expect(response?.status()).toBe(404);
   await expect(page.locator('h1')).toContainText('Página no encontrada');
+});
+
+// CI builds with the Turnstile test keys and a log-only email sink (.github/workflows/ci.yml).
+test('contact form sends a valid message and shows the no-JS fallback', async ({
+  page,
+  browser,
+}) => {
+  test.skip(!process.env['CI'], 'needs the CI Turnstile test keys');
+  await page.goto('/en/contact/');
+  const form = page.locator('#contact-form');
+  await form.getByLabel('Message').fill('Short');
+  await form.getByRole('button', { name: 'Send message' }).click();
+  await expect(form.getByRole('status')).toContainText('20 to 4000');
+
+  await form.getByLabel('Name').fill('Ada Lovelace');
+  await form.getByLabel('Email').fill('ada@example.com');
+  await form.getByLabel('Message').fill('I would like a technical review of my app.');
+  await expect(form.locator('input[name="cf-turnstile-response"]')).not.toHaveValue('');
+  await form.getByRole('button', { name: 'Send message' }).click();
+  await expect(form.getByRole('status')).toHaveText('Message sent. I will reply soon.');
+
+  const noJs = await browser.newContext({ javaScriptEnabled: false });
+  const plain = await noJs.newPage();
+  await plain.goto('/contacto/');
+  await expect(plain.locator('#contact-form')).toBeHidden();
+  await expect(plain.getByRole('link', { name: 'samuelalonsodev@gmail.com' })).toBeVisible();
+  await noJs.close();
 });

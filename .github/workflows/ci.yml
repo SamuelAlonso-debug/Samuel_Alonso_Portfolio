@@ -49,6 +49,9 @@ jobs:
 
       - name: Build
         run: pnpm build
+        # Turnstile test key: always passes, so the E2E can send the form.
+        env:
+          PUBLIC_TURNSTILE_SITE_KEY: 1x00000000000000000000AA
 
       - name: JS and page-weight budgets
         run: node --test scripts/budgets.test.ts && node scripts/budgets.ts
@@ -98,6 +101,10 @@ jobs:
       # extra network dependency (DNS failures on 2026-11-11 blocked the job twice).
       - name: Install Chromium
         run: pnpm exec playwright install chromium
+
+      # Turnstile test secret (always passes) and a log-only email sink: no real mail.
+      - name: Worker vars for the contact form
+        run: printf 'TURNSTILE_SECRET_KEY=1x0000000000000000000000000000000AA\nEMAIL_SINK=log\n' > .dev.vars
 
       - name: E2E on the real build (CSP, axe WCAG 2.2 AA, i18n, 404)
         run: pnpm test:e2e
