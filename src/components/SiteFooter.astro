@@ -1,5 +1,6 @@
 ---
 import type { Locale } from '../i18n/config';
+import { routes } from '../i18n/routes';
 import { t } from '../i18n/ui';
 
 interface Props {
@@ -14,6 +15,14 @@ const year = new Date(__BUILD_DATE__).getUTCFullYear();
   <div class="mx-auto grid max-w-300 gap-3 px-4 py-8 text-sm text-muted sm:px-6 md:flex md:items-center md:justify-between">
     <p>
       © {year} Samuel Alonso Hernández. {t(locale, 'footer.rights')}
+    </p>
+    <p>
+      <a
+        href={routes.howItsMade[locale]}
+        class="underline decoration-current/40 underline-offset-2"
+      >
+        {t(locale, 'how.made.title')}
+      </a>
     </p>
     <p class="font-mono text-xs">
       {t(locale, 'footer.build')} <span data-build-sha>{__BUILD_SHA__}</span>
