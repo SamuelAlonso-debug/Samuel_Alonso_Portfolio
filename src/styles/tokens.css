@@ -47,6 +47,7 @@
   --scene-accent: oklch(46% 0.085 215);
   --scene-accent-ink: oklch(97.5% 0.004 240);
   --scene-hours: oklch(46% 0.085 215);
+  --scene-dim: 0.55;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -75,6 +76,7 @@
     --scene-accent: var(--action);
     --scene-accent-ink: var(--action-ink);
     --scene-hours: var(--ink-field-hours);
+    --scene-dim: 0.4;
   }
 }
 
@@ -104,6 +106,7 @@
   --scene-accent: var(--action);
   --scene-accent-ink: var(--action-ink);
   --scene-hours: var(--ink-field-hours);
+  --scene-dim: 0.4;
 }
 
 /* Field tones: the home page takes the colors of the section at mid-screen. */

@@ -137,7 +137,7 @@ if (statement) {
     cur: 0,
     update: (p) => {
       const k = clamp(p * 1.2) * words.length;
-      words.forEach((w, i) => (w.style.opacity = String(lerp(0.4, 1, clamp(k - i)))));
+      words.forEach((w, i) => w.style.setProperty('--lit', String(clamp(k - i))));
     },
   });
 }
