@@ -48,6 +48,9 @@ if (booking && siteKey) allowTurnstile(Astro.csp);
     ...(hasCases ? [{ id: 'cases', label: t(locale, 'cases.title') }] : []),
     { id: 'about', label: t(locale, 'nav.about') },
     { id: 'how', label: t(locale, 'how.title') },
+    ...(testimonials.length > 0
+      ? [{ id: 'testimonials', label: t(locale, 'nav.testimonials') }]
+      : []),
     ...(call ? [{ id: 'contact', label: t(locale, 'nav.contact') }] : []),
   ]}
   cta={call}
