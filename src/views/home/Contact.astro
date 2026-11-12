@@ -31,7 +31,18 @@ const email = 'samuelalonsodv@gmail.com';
       <p class="lead">{sampleCopy[locale].contact}</p>
       <div class="row">
         <a class="orb magnetic" href={booking}>
-          <span>{t(locale, 'cta.book')}</span>
+          <svg class="cal" viewBox="0 0 24 24" aria-hidden="true">
+            <rect x="3.5" y="5" width="17" height="15.5" rx="3"></rect>
+            <path d="M3.5 10h17M8 3v4M16 3v4"></path>
+            <circle cx="12" cy="15" r="1.6"></circle>
+          </svg>
+          <span class="label">
+            {t(locale, 'cta.book')}
+            <svg class="arrow" viewBox="0 0 16 16" aria-hidden="true">
+              <path d="M5 11 11 5M6 5h5v5"></path>
+            </svg>
+          </span>
+          <span class="meta">{t(locale, 'cta.book.meta')}</span>
         </a>
         <div class="reach">
           <p class="reach-label">{t(locale, 'contact.write')}</p>
@@ -121,7 +132,9 @@ const email = 'samuelalonsodv@gmail.com';
   }
   .orb {
     display: grid;
-    place-items: center;
+    place-content: center;
+    justify-items: center;
+    gap: 6px;
     width: 176px;
     height: 176px;
     padding: 24px;
@@ -140,9 +153,40 @@ const email = 'samuelalonsodv@gmail.com';
   .orb:active {
     scale: 0.96;
   }
+  .orb svg {
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.75;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .cal {
+    width: 28px;
+    height: 28px;
+  }
+  .cal circle {
+    fill: currentColor;
+    stroke: none;
+  }
+  .arrow {
+    display: inline-block;
+    width: 0.8em;
+    height: 0.8em;
+    margin-left: 2px;
+    vertical-align: -0.05em;
+    transition: transform 150ms ease-out;
+  }
+  .meta {
+    font-size: 0.8125rem;
+    font-weight: 500;
+    opacity: 0.8;
+  }
   @media (hover: hover) and (pointer: fine) {
     .orb:hover {
       background: var(--action-hover);
+    }
+    .orb:hover .arrow {
+      transform: translate(2px, -2px);
     }
   }
   .reach {
