@@ -23,7 +23,7 @@ Enforced in CI:
 
 Design budgets, not yet enforced in CI: JavaScript ≤20 KB gzipped per page, home page ≤400 KB.
 
-Production only receives commits that passed every gate.
+Production only receives commits that passed every gate, through the manual Deploy workflow. Merging to `main` does not deploy.
 
 ## Run locally
 

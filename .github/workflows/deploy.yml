@@ -1,0 +1,62 @@
+# Manual deploy. Run from Actions › Deploy › Run workflow on main.
+# Fast-forwards `production` to the main commit; Workers Builds deploys it; then checks the live site.
+# Rulesets reject the push unless the commit passed every CI gate and its Workers Build.
+# Only the deploy key in the `production` environment (main only) may move `production`.
+name: Deploy
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: production
+  cancel-in-progress: false
+
+jobs:
+  promote:
+    name: Promote to production
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    environment: production
+    steps:
+      - name: Fast-forward production to this commit
+        env:
+          DEPLOY_KEY: ${{ secrets.PRODUCTION_DEPLOY_KEY }}
+          REPO: ${{ github.repository }}
+          SHA: ${{ github.sha }}
+        run: |
+          key="${RUNNER_TEMP}/deploy_key"
+          hosts="${RUNNER_TEMP}/known_hosts"
+          printf '%s\n' "${DEPLOY_KEY}" > "${key}"
+          chmod 600 "${key}"
+          echo 'github.com ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOMqqnkVzrm0SdG6UOoqKLsabgH5C9okWi0dh2l9GKJl' > "${hosts}"
+          export GIT_SSH_COMMAND="ssh -i ${key} -o IdentitiesOnly=yes -o UserKnownHostsFile=${hosts}"
+          remote="git@github.com:${REPO}.git"
+          git init -q repo
+          git -C repo fetch -q --depth=1 "${remote}" "${SHA}"
+          # No --force: the ruleset also rejects anything that is not a fast-forward.
+          git -C repo push "${remote}" "${SHA}:refs/heads/production"
+
+  verify-production:
+    name: Verify production
+    needs: promote
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Node
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .node-version
+
+      - name: Wait for this commit, then check headers, routes, CSP, caching and Observatory
+        env:
+          SITE_URL: ${{ vars.SITE_URL }}
+          EXPECTED_SHA: ${{ github.sha }}
+        run: node scripts/verify-deploy.ts

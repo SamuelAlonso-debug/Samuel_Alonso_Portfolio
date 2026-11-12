@@ -1,9 +1,6 @@
-# CI/CD chain:
-#   PR ──► gates (quality · E2E+axe · Lighthouse · security) + Cloudflare preview
-#   merge to main ──► same gates ──► promote (fast-forward `production`)
-#   ──► Workers Builds deploys production ──► verify-production checks the live deploy.
-# GitHub never holds a Cloudflare token. Workers Builds re-runs the browserless gates
-# before every build.
+# CI: every PR and every push to main run the gates (quality · E2E+axe · Lighthouse · security).
+# Workers Builds builds the same commit on Cloudflare and uploads a preview version.
+# Nothing here deploys. Production moves only through the manual Deploy workflow (deploy.yml).
 name: CI
 
 on:
@@ -188,47 +185,3 @@ jobs:
 
       - name: Dependency advisories (fails on any unreviewed advisory)
         run: pnpm audit
-
-  # CD: production only receives commits that passed every gate.
-  # Workers Builds deploys from `production`; this job fast-forwards it. No Cloudflare token in GitHub.
-  promote:
-    name: Promote to production
-    needs: [quality, e2e, lighthouse, security]
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-    permissions:
-      contents: write # only to move the production branch via the API
-    concurrency:
-      group: production
-      cancel-in-progress: false
-    steps:
-      - name: Fast-forward production to the gated commit
-        env:
-          GH_TOKEN: ${{ github.token }}
-          REPO: ${{ github.repository }}
-          SHA: ${{ github.sha }}
-        # force=false: fails instead of rewriting if production is not an ancestor of this commit.
-        run: gh api --method PATCH "repos/${REPO}/git/refs/heads/production" -f sha="${SHA}" -F force=false
-
-  verify-production:
-    name: Verify production
-    needs: promote
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
-    steps:
-      - name: Checkout
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-
-      - name: Node
-        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
-        with:
-          node-version-file: .node-version
-
-      - name: Wait for this commit, then check headers, routes, CSP, caching and Observatory
-        env:
-          SITE_URL: ${{ vars.SITE_URL }}
-          EXPECTED_SHA: ${{ github.sha }}
-        run: node scripts/verify-deploy.ts
