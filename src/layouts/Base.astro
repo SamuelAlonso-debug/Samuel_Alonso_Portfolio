@@ -4,7 +4,7 @@ import { Font } from 'astro:assets';
 import SiteFooter from '../components/SiteFooter.astro';
 import SiteHeader, { type Section } from '../components/SiteHeader.astro';
 import { htmlLang, locales, ogLocale, type Locale } from '../i18n/config';
-import { pathFor, type RouteKey } from '../i18n/routes';
+import type { Paths } from '../i18n/routes';
 import { t } from '../i18n/ui';
 import { sha256Base64, THEME_INIT_SCRIPT } from '../lib/theme-init';
 
@@ -14,8 +14,8 @@ interface Props {
   locale: Locale;
   title: string;
   description: string;
-  /** Page with an equivalent in the other locale. Absent (e.g. 404): no canonical or alternates. */
-  routeKey?: RouteKey | undefined;
+  /** The page in each locale. Absent (e.g. 404): no canonical, alternates or language switch. */
+  paths?: Paths | undefined;
   noindex?: boolean | undefined;
   /** Field tone for pages that start on a color field (home). */
   tone?: 'ink' | 'petrol' | undefined;
@@ -25,16 +25,13 @@ interface Props {
   cta?: Section | undefined;
 }
 
-const { locale, title, description, routeKey, noindex = false, tone, sections, cta } = Astro.props;
+const { locale, title, description, paths, noindex = false, tone, sections, cta } = Astro.props;
 
-const canonical = routeKey ? new URL(pathFor(routeKey, locale), Astro.site).href : undefined;
-const alternates = routeKey
-  ? locales.map((l) => ({
-      hreflang: htmlLang[l],
-      href: new URL(pathFor(routeKey, l), Astro.site).href,
-    }))
+const canonical = paths ? new URL(paths[locale], Astro.site).href : undefined;
+const alternates = paths
+  ? locales.map((l) => ({ hreflang: htmlLang[l], href: new URL(paths[l], Astro.site).href }))
   : [];
-const xDefault = routeKey ? new URL(pathFor(routeKey, 'es'), Astro.site).href : undefined;
+const xDefault = paths ? new URL(paths.es, Astro.site).href : undefined;
 ---
 
 <!doctype html>
@@ -75,7 +72,7 @@ const xDefault = routeKey ? new URL(pathFor(routeKey, 'es'), Astro.site).href : 
     >
       {t(locale, 'a11y.skip')}
     </a>
-    <SiteHeader locale={locale} routeKey={routeKey} sections={sections} cta={cta} />
+    <SiteHeader locale={locale} paths={paths} sections={sections} cta={cta} />
     <main id="content" tabindex="-1" class="focus:outline-none">
       <slot />
     </main>

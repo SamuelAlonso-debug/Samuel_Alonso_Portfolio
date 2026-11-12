@@ -1,6 +1,6 @@
 ---
 import type { Locale } from '../i18n/config';
-import { pathFor, type RouteKey } from '../i18n/routes';
+import { routes, type Paths } from '../i18n/routes';
 import { t } from '../i18n/ui';
 import Button from './Button.astro';
 import LangSwitch from './LangSwitch.astro';
@@ -13,20 +13,20 @@ export interface Section {
 
 interface Props {
   locale: Locale;
-  routeKey?: RouteKey | undefined;
+  paths?: Paths | undefined;
   /** In-page sections: links on desktop, a menu sheet at ≤820 px. */
   sections?: Section[] | undefined;
   /** Primary action, desktop only. Neutral while another primary action is on screen. */
   cta?: Section | undefined;
 }
 
-const { locale, routeKey, sections = [], cta } = Astro.props;
+const { locale, paths, sections = [], cta } = Astro.props;
 const menu = sections.length > 0;
 ---
 
 <header class="fixed inset-x-3 top-3 z-40 flex items-center justify-between gap-1 rounded-full bg-paper/70 py-1.5 pr-1.5 pl-5 whitespace-nowrap shadow-float backdrop-blur-md sm:inset-x-auto sm:left-1/2 sm:-translate-x-1/2">
   <a
-    href={pathFor('home', locale)}
+    href={routes.home[locale]}
     aria-label={t(locale, 'header.home')}
     class="mr-3 inline-flex min-h-10 items-center font-bold tracking-tight text-ink no-underline"
   >
@@ -42,9 +42,9 @@ const menu = sections.length > 0;
     </nav>
   )}
   <div class="flex items-center gap-1">
-    {routeKey && (
+    {paths && (
       <span class:list={{ 'max-[820px]:hidden': menu }}>
-        <LangSwitch locale={locale} routeKey={routeKey} />
+        <LangSwitch locale={locale} paths={paths} />
       </span>
     )}
     <ThemeToggle locale={locale} />
@@ -80,7 +80,7 @@ const menu = sections.length > 0;
         <a href={`#${s.id}`}>{s.label}</a>
       ))}
     </nav>
-    {routeKey && <LangSwitch locale={locale} routeKey={routeKey} />}
+    {paths && <LangSwitch locale={locale} paths={paths} />}
   </div>
 )}
 
