@@ -1,0 +1,216 @@
+---
+/** How the site is built and verified. Every number links to the file or report that enforces it. */
+import Figure from '../components/Figure.astro';
+import type { Locale } from '../i18n/config';
+import { routes } from '../i18n/routes';
+import { t } from '../i18n/ui';
+import Base from '../layouts/Base.astro';
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const repo = 'https://github.com/SamuelAlonso-debug/Samuel_Alonso_Portfolio';
+const file = (path: string) => `${repo}/blob/main/${path}`;
+const observatory = `https://developer.mozilla.org/en-US/observatory/analyze?host=${new URL(Astro.site ?? 'http://localhost').host}`;
+
+const copy = {
+  es: {
+    lead: 'Este sitio se construye y verifica como un proyecto para un cliente. El código y los requisitos son públicos.',
+    stack: 'Stack',
+    stackItems: [
+      'Astro, páginas estáticas',
+      'TypeScript y Tailwind CSS',
+      'Cloudflare Workers',
+      'Vitest, Playwright y axe',
+    ],
+    budgets: 'Presupuestos de calidad',
+    budgetsLead: 'CI los revisa en cada PR. Si uno falla, el cambio no entra.',
+    budgetRows: [
+      ['Rendimiento en Lighthouse (móvil)', '≥95', file('lighthouserc.json')],
+      ['Accesibilidad y buenas prácticas', '100', file('lighthouserc.json')],
+      ['LCP', '≤1.8 s', file('lighthouserc.json')],
+      ['Errores de axe (WCAG 2.2 AA)', '0', file('tests/e2e/smoke.spec.ts')],
+      ['JavaScript por página (gzip)', '≤20 KB', file('scripts/budgets.ts')],
+      ['Peso de la página de inicio', '≤400 KB', file('scripts/budgets.ts')],
+      ['Cabeceras de seguridad (MDN Observatory)', 'A+', observatory],
+    ],
+    runs: 'Últimas ejecuciones de CI',
+    security: 'Seguridad',
+    securityItems: [
+      'Política de seguridad de contenido con hashes, generada en cada build.',
+      'Cabeceras HTTP estrictas y sin cookies.',
+      'Dependencias con versión exacta, acciones fijadas por SHA y solo versiones con',
+    ],
+    age: '3 días publicadas',
+    delivery: 'De la idea a producción',
+    diagram: 'Flujo de entrega: issue, PR, CI, merge, deploy manual y verificación.',
+    steps: [
+      'Issue',
+      'Pull request',
+      'CI: calidad, E2E, Lighthouse',
+      'Merge a main',
+      'Deploy manual',
+      'Verificación en vivo',
+    ],
+    caption:
+      'Un merge nunca publica. Producción recibe solo commits que pasaron cada revisión, con un deploy manual que construye, promueve y verifica.',
+    more: 'Requisitos completos en el Wiki',
+    code: 'Código en GitHub',
+  },
+  en: {
+    lead: 'This site is built and verified like a client project. The code and the requirements are public.',
+    stack: 'Stack',
+    stackItems: [
+      'Astro, static pages',
+      'TypeScript and Tailwind CSS',
+      'Cloudflare Workers',
+      'Vitest, Playwright and axe',
+    ],
+    budgets: 'Quality budgets',
+    budgetsLead: 'CI checks them on every PR. If one fails, the change does not go in.',
+    budgetRows: [
+      ['Lighthouse performance (mobile)', '≥95', file('lighthouserc.json')],
+      ['Accessibility and best practices', '100', file('lighthouserc.json')],
+      ['LCP', '≤1.8 s', file('lighthouserc.json')],
+      ['axe violations (WCAG 2.2 AA)', '0', file('tests/e2e/smoke.spec.ts')],
+      ['JavaScript per page (gzip)', '≤20 KB', file('scripts/budgets.ts')],
+      ['Home page weight', '≤400 KB', file('scripts/budgets.ts')],
+      ['Security headers (MDN Observatory)', 'A+', observatory],
+    ],
+    runs: 'Latest CI runs',
+    security: 'Security',
+    securityItems: [
+      'Content Security Policy with hashes, generated on every build.',
+      'Strict HTTP headers and no cookies.',
+      'Exact dependency versions, SHA-pinned actions and only versions published',
+    ],
+    age: '3 days ago or more',
+    delivery: 'From idea to production',
+    diagram: 'Delivery flow: issue, PR, CI, merge, manual deploy and verification.',
+    steps: [
+      'Issue',
+      'Pull request',
+      'CI: quality, E2E, Lighthouse',
+      'Merge to main',
+      'Manual deploy',
+      'Live verification',
+    ],
+    caption:
+      'A merge never deploys. Production only gets commits that passed every check, through a manual deploy that builds, promotes and verifies.',
+    more: 'Full requirements in the Wiki',
+    code: 'Code on GitHub',
+  },
+}[locale];
+
+const title = t(locale, 'how.made.title');
+---
+
+<Base
+  locale={locale}
+  paths={routes.howItsMade}
+  title={`${title} · Samuel Alonso`}
+  description={copy.lead}
+>
+  <div class="mx-auto max-w-300 px-5 pt-32 pb-24 sm:px-8 md:pt-40">
+    <h1 class="text-4xl font-bold tracking-tight">{title}</h1>
+    <p class="mt-5 max-w-[48ch] text-xl text-muted">{copy.lead}</p>
+
+    <section class="mt-20" aria-labelledby="stack">
+      <h2 id="stack" class="text-2xl font-semibold tracking-tight">
+        {copy.stack}
+      </h2>
+      <ul class="mt-6 grid gap-2 text-lg">
+        {copy.stackItems.map((item) => (
+          <li>{item}</li>
+        ))}
+      </ul>
+    </section>
+
+    <section class="mt-20" aria-labelledby="budgets">
+      <h2 id="budgets" class="text-2xl font-semibold tracking-tight">
+        {copy.budgets}
+      </h2>
+      <p class="mt-3 text-lg text-muted">{copy.budgetsLead}</p>
+      <dl class="mt-6 border-b border-line">
+        {copy.budgetRows.map(([label, value, href]) => (
+          <div class="flex items-baseline justify-between gap-6 border-t border-line py-4">
+            <dt class="text-lg">{label}</dt>
+            <dd class="text-lg font-semibold tabular-nums">
+              <a href={href}>{value}</a>
+            </dd>
+          </div>
+        ))}
+      </dl>
+      <p class="mt-6">
+        <a href={`${repo}/actions/workflows/ci.yml`}>{copy.runs}</a>
+      </p>
+    </section>
+
+    <section class="mt-20" aria-labelledby="security">
+      <h2 id="security" class="text-2xl font-semibold tracking-tight">
+        {copy.security}
+      </h2>
+      <ul class="mt-6 grid max-w-[62ch] gap-3 text-lg">
+        <li>
+          <a href={file('astro.config.mjs')}>{copy.securityItems[0]}</a>
+        </li>
+        <li>
+          <a href={file('public/_headers')}>{copy.securityItems[1]}</a>
+        </li>
+        <li>
+          {copy.securityItems[2]} <a href={file('pnpm-workspace.yaml')}>{copy.age}</a>.
+        </li>
+      </ul>
+    </section>
+
+    <section class="mt-20" aria-labelledby="delivery">
+      <h2 id="delivery" class="text-2xl font-semibold tracking-tight">
+        {copy.delivery}
+      </h2>
+      <div class="mt-8">
+        <Figure label={copy.diagram}>
+          <svg viewBox="0 0 280 404" class="w-full max-w-80" aria-hidden="true">
+            {copy.steps.map((step, i) => (
+              <g>
+                <rect x="1" y={1 + i * 68} width="278" height="44" rx="10" class="box" />
+                <text x="140" y={28 + i * 68} text-anchor="middle" class="label">
+                  {step}
+                </text>
+                {i < copy.steps.length - 1 && <path d={`M140 ${46 + i * 68} v18`} class="edge" />}
+              </g>
+            ))}
+          </svg>
+          <Fragment slot="caption">{copy.caption}</Fragment>
+        </Figure>
+      </div>
+    </section>
+
+    <p class="mt-20 flex flex-wrap gap-x-8 gap-y-3 text-lg font-semibold">
+      <a href={`${repo}/wiki/Requirements`}>{copy.more}</a>
+      <a href={repo}>{copy.code}</a>
+    </p>
+  </div>
+</Base>
+
+<style>
+  a {
+    text-decoration-line: underline;
+    text-decoration-color: color-mix(in oklch, currentColor 40%, transparent);
+    text-underline-offset: 2px;
+  }
+  .box {
+    fill: var(--surface);
+    stroke: var(--line);
+  }
+  .label {
+    fill: var(--ink);
+    font-size: 14px;
+    font-weight: 600;
+  }
+  .edge {
+    stroke: var(--muted);
+    stroke-width: 1.5;
+  }
+</style>

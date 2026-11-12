@@ -6,6 +6,8 @@ const withCases = !!process.env['CASES_DIR'];
 const pages = [
   { path: '/', lang: 'es-MX', switchTo: '/en/' },
   { path: '/en/', lang: 'en', switchTo: '/' },
+  { path: '/como-esta-hecho/', lang: 'es-MX', switchTo: '/en/how-its-made/' },
+  { path: '/en/how-its-made/', lang: 'en', switchTo: '/como-esta-hecho/' },
   ...(withCases
     ? ([
         { path: '/casos/sea/', lang: 'es-MX', switchTo: '/en/work/sea/' },

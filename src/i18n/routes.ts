@@ -10,4 +10,5 @@ export type Paths = Record<Locale, string>;
 export const routes = {
   home: { es: '/', en: '/en/' },
   cases: { es: '/casos/', en: '/en/work/' },
+  howItsMade: { es: '/como-esta-hecho/', en: '/en/how-its-made/' },
 } as const satisfies Record<string, Paths>;
