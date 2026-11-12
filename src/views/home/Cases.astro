@@ -60,6 +60,15 @@ const pad = (n: number) => String(n).padStart(2, '0');
     gap: 6vw;
     padding-inline: var(--pad) 12vw;
   }
+  /* Pinned: the track and each screen move on their own layers, so scrolling never repaints them. */
+  @media (min-width: 821px) and (prefers-reduced-motion: no-preference) {
+    :global(html.js) .track {
+      will-change: transform;
+    }
+    :global(html.js) .track :global(.media-inner) {
+      will-change: translate;
+    }
+  }
   .intro {
     flex: 0 0 min(30rem, 34vw);
     align-self: center;
