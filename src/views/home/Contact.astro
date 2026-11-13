@@ -76,6 +76,12 @@ const email = 'samuelalonsodv@gmail.com';
   :global(body:has(#contact) > footer) {
     margin-top: 0;
   }
+  /* With the neon strands layer the field is see-through: the rails run under copy and form,
+     and the curve goes (scripts/strands.ts). */
+  :global(html.strands-on) .contact,
+  :global(html.strands-on body:has(#contact) > footer) {
+    background: transparent;
+  }
   .contact {
     position: relative;
     min-height: 100svh;
@@ -97,6 +103,9 @@ const email = 'samuelalonsodv@gmail.com';
   }
   :global(html.js) .curve {
     display: block;
+  }
+  :global(html.strands-on) .curve {
+    display: none;
   }
   .inner {
     position: relative;

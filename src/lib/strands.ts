@@ -15,25 +15,37 @@ export type Station = {
   chaos: number;
   f: Family[];
 };
-/** kind: the scene whose text dims the strands. */
-export type Frame = Station & { kind: string; shift: number };
+/** keep: the scenes in view, whose text dims the strands. glass: weight of the contact lane. */
+export type Frame = Station & { keep: string[]; glass: number; shift: number };
 export type Section = { id: string; top: number; bottom: number };
+export type Rect = { left: number; top: number; right: number; bottom: number };
+/** An element's viewport rect: anchored routes follow it while it scrolls. */
+export type Box = (sel: string) => Rect | undefined;
 export type Arc = { C: Point; r: number; a0: number; dl: number; u: number; sg: number };
 
 /** Colors per scene: core 1, edge 1, core 2, edge 2. */
 export type Palette = Record<string, Rgb[]>;
 
-export const SCENES = ['hero', 'statement', 'cases'];
+export const SCENES = ['hero', 'statement', 'cases', 'about', 'how', 'testimonials', 'contact'];
 const kind = (id: string) => (SCENES.includes(id) ? id : 'rest');
 
 const clamp = (v: number, a = 0, b = 1) => Math.min(b, Math.max(a, v));
 const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
 const sm = (t: number) => t * t * (3 - 2 * t);
 
-export function station(id: string, vw: number, vh: number, n: boolean, pal: Palette): Station {
+export function station(
+  id: string,
+  vw: number,
+  vh: number,
+  n: boolean,
+  pal: Palette,
+  box: Box = () => undefined,
+): Station {
   const P = (x: number, y: number): Point => [x * vw, y * vh];
   const k = (pal[kind(id)] ?? pal['rest'] ?? []) as Rgb[];
   const black: Rgb = [0, 0, 0];
+  const at = (sel: string, l: number, t: number, r: number, b: number): Rect =>
+    box(sel) ?? { left: l * vw, top: t * vh, right: r * vw, bottom: b * vh };
   const F = (fam: 0 | 1, o: number, w: number, g: number, a: number, ph: number): Family => ({
     o,
     w,
@@ -86,6 +98,107 @@ export function station(id: string, vw: number, vh: number, n: boolean, pal: Pal
           F(1, 0, n ? 13 : 30, n ? 2.2 : 2.9, n ? 10 : 60, Math.PI),
         ],
       };
+    case 'about': {
+      // Orbits the clock card: ∩ on phones, U opening left on desktop.
+      const d = at('#about .dial', 0.05, 0.2, 0.45, 0.8);
+      return {
+        pts: n
+          ? [
+              [d.left - 8, d.bottom + vh],
+              [d.left - 8, d.top - 28],
+              [d.right + 8, d.top - 28],
+              [d.right + 8, d.bottom + vh],
+            ]
+          : [
+              [-0.2 * vw, d.top - 40],
+              [d.right + 44, d.top - 40],
+              [d.right + 44, d.bottom + 40],
+              [-0.2 * vw, d.bottom + 40],
+            ],
+        R: n ? 90 : 150,
+        wave: 800,
+        gain: 0.9,
+        chaos: 0.15,
+        f: [
+          F(0, n ? -16 : -26, n ? 20 : 30, n ? 1.9 : 2.6, 3, 0),
+          F(1, n ? 18 : 30, n ? 14 : 24, n ? 2.2 : 2.9, 3, 1.4),
+        ],
+      };
+    }
+    case 'how': {
+      // Down the right edge, then the baseline under the services.
+      const x = (n ? 0.975 : 0.985) * vw;
+      const y = at('#how .rows', 0, 0.2, 1, 0.85).bottom + 44;
+      return {
+        pts: [
+          [x, -0.2 * vh],
+          [x, y],
+          [0.4 * vw, y],
+          [-0.2 * vw, y],
+        ],
+        R: n ? 100 : 170,
+        wave: 900,
+        gain: 0.9,
+        chaos: 0.25,
+        f: [
+          F(0, n ? -14 : -24, n ? 16 : 28, n ? 1.9 : 2.6, 4, 0),
+          F(1, n ? 14 : 26, n ? 12 : 22, n ? 2.2 : 2.9, 4, 2),
+        ],
+      };
+    }
+    case 'testimonials': {
+      // Many voices: a loose braid under the quote. It runs right to left like its neighbors
+      // (how I work, contact): a reversed route folds on itself mid-transition and breaks.
+      const q = at('#testimonials .quotes', 0, 0.25, 1, 0.7);
+      const y = Math.min(q.bottom + (n ? 30 : 60), 0.9 * vh);
+      return {
+        pts: [
+          [1.2 * vw, y],
+          [0.7 * vw, y],
+          [0.3 * vw, y],
+          [-0.2 * vw, y],
+        ],
+        R: 40,
+        wave: n ? 520 : 1100,
+        gain: 0.95,
+        chaos: 0.75,
+        f: [
+          F(0, 0, n ? 16 : 30, n ? 1.9 : 2.6, n ? 14 : 50, 0),
+          F(1, 0, n ? 13 : 26, n ? 2.2 : 2.9, n ? 14 : 50, Math.PI),
+        ],
+      };
+    }
+    case 'contact': {
+      // Two rails come down (desktop: between copy and form) and close in rings around the orb:
+      // the route ends at its centre, so the offset bundles wrap around that end.
+      const o = at('#contact .orb', 0.05, 0.7, 0.2, 0.9);
+      const cx = (o.left + o.right) / 2;
+      const cy = (o.top + o.bottom) / 2;
+      const rad = (o.right - o.left) / 2;
+      const copy = box('#contact .inner > :first-child');
+      const form = box('#contact form');
+      const x = n
+        ? 0.8 * vw
+        : copy && form && form.left > copy.right
+          ? (copy.right + form.left) / 2
+          : 0.78 * vw;
+      return {
+        pts: [
+          [x, -0.3 * vh],
+          [x, cy],
+          [(x + cx) / 2, cy],
+          [cx, cy],
+        ],
+        R: n ? 90 : 180,
+        wave: 900,
+        gain: 1,
+        chaos: 0,
+        f: [
+          F(0, -(rad + 22), n ? 16 : 22, n ? 1.9 : 2.6, 0, 0),
+          F(1, rad + 22, n ? 14 : 20, n ? 2.2 : 2.9, 0, 0),
+        ],
+      };
+    }
     default:
       return {
         pts: [P(0.965, -0.2), P(0.965, 0.4), P(0.965, 0.7), P(0.965, 1.2)],
@@ -102,7 +215,11 @@ export function station(id: string, vw: number, vh: number, n: boolean, pal: Pal
 export const reach = (s: Station) =>
   Math.max(...s.f.map((f) => Math.abs(f.o) + f.w * 1.5 + f.a)) + 70 * s.chaos + 16;
 
-/** Stations of the section at mid-screen and the next one, blended near the boundary. */
+/**
+ * Stations of the section at mid-screen and the next one, blended while their boundary crosses
+ * the screen. The blend spans at most either section, and the pair changes where a blend ends,
+ * so nothing jumps.
+ */
 export function blend(
   sections: Section[],
   scrollY: number,
@@ -110,19 +227,27 @@ export function blend(
   vh: number,
   n: boolean,
   pal: Palette,
+  box?: Box,
 ): Frame {
   const y = scrollY + vh * 0.5;
-  let i = sections.findIndex((s) => y < s.bottom);
+  const span = (j: number) => {
+    const [s, x] = [sections[j], sections[j + 1]];
+    return s && x ? Math.min(vh * 1.1, s.bottom - s.top, x.bottom - x.top) : 0;
+  };
+  let i = sections.findIndex((s, j) => y < s.bottom + 0.55 * span(j));
   if (i < 0) i = sections.length - 1;
   const a = sections[i] ?? { id: 'rest', top: 0, bottom: 0 };
-  const b = sections[i + 1] ?? a;
-  const t = sm(clamp((y - (a.bottom - vh * 0.45)) / (vh * 0.7)));
-  const A = station(a.id, vw, vh, n, pal);
-  const B = station(b.id, vw, vh, n, pal);
+  const b = sections[i + 1];
+  const w = span(i);
+  const t = w ? sm(clamp((y - a.bottom + 0.45 * w) / w)) : 0;
+  const A = station(a.id, vw, vh, n, pal, box);
+  const B = b ? station(b.id, vw, vh, n, pal, box) : A;
+  const lane = (id = '') => (kind(id) === 'contact' ? 1 : 0);
   // Order → disorder → order: mid-transition the bundles trade sides and chaos peaks.
   const swap = Math.sin(Math.PI * t);
   return {
-    kind: kind(t < 0.5 ? a.id : b.id),
+    keep: sections.filter((s) => s.bottom > scrollY && s.top < scrollY + vh).map((s) => kind(s.id)),
+    glass: lerp(lane(a.id), lane(b?.id), t),
     pts: A.pts.map((p, j) => {
       const q = B.pts[j] ?? p;
       return [lerp(p[0], q[0], t), lerp(p[1], q[1], t)];

@@ -56,6 +56,14 @@
     oklch(58.3% 0.105 177.1);
   --strand-cases: oklch(72.9% 0.17 35.1) oklch(66.5% 0.228 11.9) oklch(82.9% 0.098 37.8)
     oklch(68.7% 0.202 27.5);
+  --strand-about: oklch(80.2% 0.13 214.8) oklch(61.8% 0.207 259.1) oklch(90.8% 0.082 210.3)
+    oklch(70.2% 0.121 183);
+  --strand-how: oklch(78.3% 0.11 271.7) oklch(63.9% 0.194 274.6) oklch(93.2% 0.032 270.5)
+    oklch(83.6% 0.102 230);
+  --strand-testimonials: oklch(71.3% 0.205 355.3) oklch(63.1% 0.254 306.2) oklch(81.7% 0.117 354.3)
+    oklch(68.2% 0.215 9);
+  --strand-contact: oklch(90.6% 0.16 154.8) oklch(80.2% 0.13 214.8) oklch(72.9% 0.17 35.1)
+    oklch(63.8% 0.21 290.4);
   --strand-rest: oklch(80.2% 0.13 214.8) oklch(61.8% 0.207 259.1) oklch(88.3% 0.094 214.5)
     oklch(67.9% 0.12 221.2);
 }
