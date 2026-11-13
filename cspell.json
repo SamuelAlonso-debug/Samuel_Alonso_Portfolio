@@ -68,7 +68,13 @@
     "wcag",
     "winget",
     "workerd",
-    "zizmor"
+    "zizmor",
+    "fract",
+    "highp",
+    "llvmpipe",
+    "swiftshader",
+    "webglcontextlost",
+    "webglcontextrestored"
   ],
   // Production and repository URLs are not prose.
   "ignoreRegExpList": ["https?://\\S+"]

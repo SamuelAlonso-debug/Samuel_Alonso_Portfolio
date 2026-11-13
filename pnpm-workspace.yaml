@@ -26,6 +26,10 @@ auditConfig:
     # basic-ftp <=6.2.0 (DoS on FTP listing parse) via @lhci/cli 0.16 -> proxy-agent. CI never uses FTP.
     # The fix needs basic-ftp 6.x, which breaks get-uri 5.x. Still open 2026-11-12. Review: 2027-05-01.
     - GHSA-c475-qrg2-pj4r
+    # 2026-11-12: two more basic-ftp DoS advisories on the same path (MLSD parser, CR/LF in a password
+    # or resume path). Same reason: FTP is never used in CI, the fix needs basic-ftp 6.x. Review: 2027-05-01.
+    - GHSA-5pm8-86m8-9m6r
+    - GHSA-r4jh-29pc-gfqr
 
 # Install scripts are blocked except for this allowlist.
 # (`onlyBuiltDependencies` is silently ignored since pnpm 11; the current key is `allowBuilds`.)

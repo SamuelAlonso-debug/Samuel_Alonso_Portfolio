@@ -4,6 +4,7 @@
  */
 import { quoteAt, quotesRun } from '../lib/quotes';
 import { panelAt, trackRun } from '../lib/track';
+import type { Strands } from './strands';
 
 const clamp = (v: number, min = 0, max = 1) => Math.min(max, Math.max(min, v));
 const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
@@ -258,6 +259,9 @@ function readTone() {
   };
 }
 
+// Neon strands: own chunk, loaded on idle after load, never with reduced motion.
+let strands: Strands | undefined;
+
 function draw(s: Scene) {
   if (s.cur === s.shown) return;
   s.update(s.cur);
@@ -267,7 +271,7 @@ function draw(s: Scene) {
 let running = false;
 function frame() {
   const targets = scenes.map((s) => progress(s.el));
-  const writes = [readCurve(), readTone()];
+  const writes = [readCurve(), readTone(), strands?.read()];
   let moving = false;
   scenes.forEach((s, i) => {
     const target = targets[i] ?? s.cur;
@@ -276,7 +280,7 @@ function frame() {
     else moving = true;
     draw(s);
   });
-  for (const write of writes) write();
+  for (const write of writes) write?.();
   running = moving;
   if (moving) requestAnimationFrame(frame);
 }
@@ -298,9 +302,25 @@ function layout() {
   }
   readCurve()();
   readTone()();
+  strands?.layout();
+  strands?.read()();
 }
 
 addEventListener('scroll', onScroll, { passive: true });
 addEventListener('resize', layout);
 reduce.addEventListener('change', layout);
 void document.fonts.ready.then(layout);
+
+if (!reduce.matches) {
+  const idle = (f: () => void) =>
+    'requestIdleCallback' in window ? requestIdleCallback(f) : setTimeout(f, 200);
+  const boot = () =>
+    idle(() => {
+      void import('./strands').then((m) => {
+        strands = m.start();
+        strands?.read()();
+      });
+    });
+  if (document.readyState === 'complete') boot();
+  else addEventListener('load', boot, { once: true });
+}
