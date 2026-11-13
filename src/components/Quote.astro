@@ -15,7 +15,7 @@ const marked = locale === 'es' ? `«${quote}»` : `“${quote}”`;
 const position = `${author.role}, ${author.company}`;
 ---
 
-<figure class:list={['quote', { long: quote.length > 160 }]}>
+<figure class:list={['quote', 'bubble', { long: quote.length > 160 }]}>
   {demo && <p class="demo">{t(locale, 'testimonials.demo')}</p>}
   <blockquote>
     <p>{marked}</p>
@@ -29,6 +29,11 @@ const position = `${author.role}, ${author.company}`;
 </figure>
 
 <style>
+  /* The bubble hugs the quote instead of the full row. */
+  .quote {
+    justify-self: start;
+    max-width: 100%;
+  }
   blockquote p {
     max-width: 22ch;
     font-size: clamp(1.9rem, 1rem + 3vw, 4rem);
