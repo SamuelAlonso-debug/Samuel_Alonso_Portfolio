@@ -175,6 +175,13 @@ if (booking && siteKey) allowTurnstile(Astro.csp);
       transparent 78%
     );
   }
+  /* The neon strands show through the hero window while the layer runs (scripts/strands.ts). */
+  :global(html.strands-on) .photo {
+    background: transparent;
+  }
+  :global(html.strands-on) .veil {
+    display: none;
+  }
   .name,
   .dock-name {
     position: absolute;

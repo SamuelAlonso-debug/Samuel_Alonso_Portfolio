@@ -48,6 +48,16 @@
   --scene-accent-ink: oklch(97.5% 0.004 240);
   --scene-hours: oklch(46% 0.085 215);
   --scene-dim: 0.55;
+
+  /* Neon strands per scene: core 1, edge 1, core 2, edge 2. Cases use coral: amber is the action. */
+  --strand-hero: oklch(63.8% 0.21 290.4) oklch(49.3% 0.286 271.9) oklch(72.9% 0.228 340.5)
+    oklch(65.6% 0.238 10.7);
+  --strand-statement: oklch(90.6% 0.16 154.8) oklch(95.7% 0.16 117.7) oklch(76% 0.2 150.9)
+    oklch(58.3% 0.105 177.1);
+  --strand-cases: oklch(72.9% 0.17 35.1) oklch(66.5% 0.228 11.9) oklch(82.9% 0.098 37.8)
+    oklch(68.7% 0.202 27.5);
+  --strand-rest: oklch(80.2% 0.13 214.8) oklch(61.8% 0.207 259.1) oklch(88.3% 0.094 214.5)
+    oklch(67.9% 0.12 221.2);
 }
 
 @media (prefers-color-scheme: dark) {

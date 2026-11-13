@@ -153,3 +153,19 @@ html[data-theme-switching] *::before,
 html[data-theme-switching] *::after {
   transition: none !important;
 }
+
+/* Neon strands layer (scripts/strands.ts): behind all content, never interactive. */
+.strand-layer {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  width: 100vw;
+  height: 100lvh;
+  pointer-events: none;
+}
+
+@media (forced-colors: active), print {
+  .strand-layer {
+    display: none;
+  }
+}
