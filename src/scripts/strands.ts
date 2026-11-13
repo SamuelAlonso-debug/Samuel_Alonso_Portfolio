@@ -1,8 +1,7 @@
 /**
  * Neon strands layer: one fixed canvas, one WebGL2 fragment shader over a full-screen triangle.
  * scenes.ts loads it on idle and calls read() in its frame: reads first, then the draw.
- * Off without WebGL2, on software renderers, after context loss, with reduced motion and,
- * until #123, in the light theme.
+ * Off without WebGL2, on software renderers, after context loss and with reduced motion.
  */
 import { blend, parseOklch, reach, route, SCENES, type Palette } from '../lib/strands';
 
@@ -14,7 +13,7 @@ in vec2 a; void main() { gl_Position = vec4(a, 0., 1.); }`;
 // hairlines (≥0.8 device px wide, or they alias; under ~2 px spacing they blend to the average),
 // breathes and wanders with chaos, sends out 3 strays and adds a soft bloom. Text rows dim it.
 // Contact (uGlass): where a rail passes under text, a glass lane (bundle + 10 px gap) melts the
-// hairlines into a glow under a 30% tint and a thin rim.
+// hairlines into a glow under a 30% tint and a thin rim. Light (uLight): saturated dark ink, little haze.
 // No comments or indentation inside the string: it ships as written.
 const FS = `#version 300 es
 precision highp float;
@@ -22,7 +21,7 @@ uniform vec2 uRes;uniform float uK;
 uniform vec4 uS[3];uniform float uSU[3];uniform vec4 uA[2];uniform vec4 uB[2];
 uniform vec4 uF[2];uniform float uPh[2];uniform vec3 uC[2];uniform vec3 uE[2];
 uniform float uWave,uShift,uGain,uReach,uChaos;
-uniform vec4 uKeep[8];uniform int uNK;uniform float uGlass;uniform vec3 uGlassC;
+uniform vec4 uKeep[8];uniform int uNK,uLight;uniform float uGlass;uniform vec3 uGlassC;
 out vec4 o;
 float hash(float n){return fract(sin(n*127.1)*43758.5453);}
 float noise(float x){return .6*sin(x)+.3*sin(2.17*x+1.3)+.1*sin(4.31*x+2.1);}
@@ -45,7 +44,7 @@ float d=abs(rr-A.z);
 if(d<best){best=d;sd=B.z*(A.z-rr);u=B.y+rel*A.z;}
 }
 if(best>uReach){o=vec4(0.);return;}
-float keep=1.,txt=0.,lane=0.,rim=0.;
+float keep=1.,txt=0.,lane=0.,rim=0.,dk=float(1-uLight),bl=uLight==1?.3:1.;
 for(int i=0;i<8;i++){
 if(i>=uNK)break;
 vec4 r=uKeep[i];
@@ -73,7 +72,7 @@ float j=(h1-.5)*.56*g*(.6+.4*sin(u*.004+idx));
 j+=uChaos*1.8*g*noise(u*(.004+.006*h2)+idx*2.3-uShift*(.3+.5*h1));
 float dpx=abs(s-idx*g-j)*uK,tl=abs(idx*g)/w,hot=step(.88,h2);
 vec3 col=mix(uC[k],uE[k],smoothstep(.25,1.,tl));
-c+=mix(col,vec3(1.),.35+.4*hot)*exp(-dpx*dpx/(lw*lw))*(.5*uK/lw)
+c+=mix(col,vec3(1.),(.35+.4*hot)*dk)*exp(-dpx*dpx/(lw*lw))*(.5*uK/lw)
 *(.3+.7*h1+1.6*hot)*(1.-smoothstep(.55,1.,tl))*fade*2.2*clamp(g/3.4,.6,1.);
 }
 for(int m=0;m<3;m++){
@@ -81,17 +80,22 @@ float fm=float(m)*7.1+seed;
 float off=(hash(fm*3.1)-.5)*w*1.2
 +uChaos*(40.+70.*hash(fm*5.7))*noise(u*(.002+.003*hash(fm))+fm*4.-uShift*.4);
 float dpx=abs(s-off)*uK;
-c+=mix(uE[k],vec3(1.),.3)*exp(-dpx*dpx/(lw*lw))*(.5*uK/lw)*1.8*uChaos*(.5+.5*hash(fm*9.));
+c+=mix(uE[k],vec3(1.),.3*dk)*exp(-dpx*dpx/(lw*lw))*(.5*uK/lw)*1.8*uChaos*(.5+.5*hash(fm*9.));
 }
 vec3 body=mix(uC[k],uE[k],smoothstep(.25,1.,t));
-c+=body*(1.-smoothstep(.55,1.,t))*(.07+.3*(1.-fade));
-c+=body*exp(-max(abs(s)-w*.4,0.)*.045)*.11;
+c+=body*(1.-smoothstep(.55,1.,t))*(.07+.3*(1.-fade))*bl;
+c+=body*exp(-max(abs(s)-w*.4,0.)*.045)*.11*bl;
 }
+if(uLight==1){
+float m=max(c.r,max(c.g,c.b)),a=(1.-exp(-m*uGain*keep*1.15))*.92;
+o=vec4(pow(c/max(m,1e-4),vec3(2.2))*.5*a,a);
+}else{
 c=1.-exp(-c*uGain*keep);
 o=vec4(c,max(c.r,max(c.g,c.b)));
+}
 float a=.3*lane;
-o=vec4(o.rgb*(1.-a)+mix(uGlassC,vec3(1.),.07)*a,o.a*(1.-a)+a);
-a=rim*.16;
+o=vec4(o.rgb*(1.-a)+mix(uGlassC,vec3(1.),uLight==1?.6:.07)*a,o.a*(1.-a)+a);
+a=rim*(uLight==1?.55:.16);
 o=o*(1.-a)+a;
 }`;
 
@@ -210,10 +214,12 @@ export function start(): Strands | undefined {
   let H = 0;
   let lost = false;
   let on = false;
+  let light = false;
   let glass: number[] = [];
 
   const sync = () => {
-    on = !lost && !reduce.matches && !isLight();
+    on = !lost && !reduce.matches;
+    light = isLight();
     // Glass tint: the contact field color of the current theme.
     glass = parseOklch(getComputedStyle(root).getPropertyValue('--ink-scene'))[0] ?? [0, 0, 0];
     cv.hidden = !on;
@@ -290,6 +296,7 @@ export function start(): Strands | undefined {
       );
       gl.uniform1i(at('uNK'), keep.length / 4);
       gl.uniform1f(at('uGlass'), s.glass);
+      gl.uniform1i(at('uLight'), light ? 1 : 0);
       gl.uniform3fv(at('uGlassC'), glass);
       gl.drawArrays(gl.TRIANGLES, 0, 3);
     };
