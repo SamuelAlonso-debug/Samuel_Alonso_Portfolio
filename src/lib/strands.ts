@@ -15,8 +15,8 @@ export type Station = {
   chaos: number;
   f: Family[];
 };
-/** kind: the scene whose text dims the strands. */
-export type Frame = Station & { kind: string; shift: number };
+/** keep: the scenes in view, whose text dims the strands. glass: weight of the contact lane. */
+export type Frame = Station & { keep: string[]; glass: number; shift: number };
 export type Section = { id: string; top: number; bottom: number };
 export type Rect = { left: number; top: number; right: number; bottom: number };
 /** An element's viewport rect: anchored routes follow it while it scrolls. */
@@ -215,7 +215,11 @@ export function station(
 export const reach = (s: Station) =>
   Math.max(...s.f.map((f) => Math.abs(f.o) + f.w * 1.5 + f.a)) + 70 * s.chaos + 16;
 
-/** Stations of the section at mid-screen and the next one, blended near the boundary. */
+/**
+ * Stations of the section at mid-screen and the next one, blended while their boundary crosses
+ * the screen. The blend spans at most either section, and the pair changes where a blend ends,
+ * so nothing jumps.
+ */
 export function blend(
   sections: Section[],
   scrollY: number,
@@ -226,17 +230,24 @@ export function blend(
   box?: Box,
 ): Frame {
   const y = scrollY + vh * 0.5;
-  let i = sections.findIndex((s) => y < s.bottom);
+  const span = (j: number) => {
+    const [s, x] = [sections[j], sections[j + 1]];
+    return s && x ? Math.min(vh * 1.1, s.bottom - s.top, x.bottom - x.top) : 0;
+  };
+  let i = sections.findIndex((s, j) => y < s.bottom + 0.55 * span(j));
   if (i < 0) i = sections.length - 1;
   const a = sections[i] ?? { id: 'rest', top: 0, bottom: 0 };
-  const b = sections[i + 1] ?? a;
-  const t = sm(clamp((y - (a.bottom - vh * 0.45)) / (vh * 0.7)));
+  const b = sections[i + 1];
+  const w = span(i);
+  const t = w ? sm(clamp((y - a.bottom + 0.45 * w) / w)) : 0;
   const A = station(a.id, vw, vh, n, pal, box);
-  const B = station(b.id, vw, vh, n, pal, box);
+  const B = b ? station(b.id, vw, vh, n, pal, box) : A;
+  const lane = (id = '') => (kind(id) === 'contact' ? 1 : 0);
   // Order → disorder → order: mid-transition the bundles trade sides and chaos peaks.
   const swap = Math.sin(Math.PI * t);
   return {
-    kind: kind(t < 0.5 ? a.id : b.id),
+    keep: sections.filter((s) => s.bottom > scrollY && s.top < scrollY + vh).map((s) => kind(s.id)),
+    glass: lerp(lane(a.id), lane(b?.id), t),
     pts: A.pts.map((p, j) => {
       const q = B.pts[j] ?? p;
       return [lerp(p[0], q[0], t), lerp(p[1], q[1], t)];

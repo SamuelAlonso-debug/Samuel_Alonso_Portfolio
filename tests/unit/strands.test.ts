@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { reach, route, SCENES, station, type Point } from '../../src/lib/strands';
+import { blend, reach, route, SCENES, station, type Point } from '../../src/lib/strands';
 
 const near = (a: Point, b: Point) => Math.hypot(a[0] - b[0], a[1] - b[1]) < 1e-6;
 
@@ -27,5 +27,24 @@ describe('strand route', () => {
           expect(near(segments[i + 1]?.[0] ?? [NaN, NaN], end)).toBe(true);
         });
       }
+  });
+
+  it('moves smoothly with the scroll across every scene boundary', () => {
+    const [vw, vh] = [390, 844];
+    // Short sections too: a blend never spans more than either side.
+    const sections = [2.1, 2, 4.8, 0.6, 1.2, 0.9, 1.4].map((h, i, all) => {
+      const top = all.slice(0, i).reduce((sum, x) => sum + x * vh, 0);
+      return { id: SCENES[i] ?? 'rest', top, bottom: top + h * vh };
+    });
+    const flat = (y: number) => {
+      const f = blend(sections, y, vw, vh, true, {});
+      return [...f.pts.flat(), ...f.f.map((x) => x.o), 100 * f.glass];
+    };
+    let prev = flat(0);
+    for (let y = 4; y < (sections.at(-1)?.bottom ?? 0); y += 4) {
+      const cur = flat(y);
+      expect(Math.max(...cur.map((v, i) => Math.abs(v - (prev[i] ?? v))))).toBeLessThan(40);
+      prev = cur;
+    }
   });
 });
