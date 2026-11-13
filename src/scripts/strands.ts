@@ -21,6 +21,8 @@ in vec2 a; void main() { gl_Position = vec4(a, 0., 1.); }`;
 // uA: arc centre, radius, start angle. uB: sweep, u0, side, on. Each bundle draws its 5 nearest
 // hairlines (≥0.8 device px wide, or they alias; under ~2 px spacing they blend to the average),
 // breathes and wanders with chaos, sends out 3 strays and adds a soft bloom. Text rows dim it.
+// Contact (uGlass): where a rail passes under text, a glass lane (bundle + 10 px gap) melts the
+// hairlines into a glow under a 30% tint and a thin rim.
 // No comments or indentation inside the string: it ships as written.
 const FS = `#version 300 es
 precision highp float;
@@ -28,7 +30,7 @@ uniform vec2 uRes;uniform float uK;
 uniform vec4 uS[3];uniform float uSU[3];uniform vec4 uA[2];uniform vec4 uB[2];
 uniform vec4 uF[2];uniform float uPh[2];uniform vec3 uC[2];uniform vec3 uE[2];
 uniform float uWave,uShift,uGain,uReach,uChaos;
-uniform vec4 uKeep[8];uniform int uNK;
+uniform vec4 uKeep[8];uniform int uNK,uGlass;uniform vec3 uGlassC;
 out vec4 o;
 float hash(float n){return fract(sin(n*127.1)*43758.5453);}
 float noise(float x){return .6*sin(x)+.3*sin(2.17*x+1.3)+.1*sin(4.31*x+2.1);}
@@ -51,13 +53,16 @@ float d=abs(rr-A.z);
 if(d<best){best=d;sd=B.z*(A.z-rr);u=B.y+rel*A.z;}
 }
 if(best>uReach){o=vec4(0.);return;}
-float keep=1.;
+float keep=1.,txt=0.,lane=0.,rim=0.;
 for(int i=0;i<8;i++){
 if(i>=uNK)break;
 vec4 r=uKeep[i];
-float rr=min(r.w,18.);
-keep=min(keep,mix(.3,1.,smoothstep(-6.,40.,sdBox(p-r.xy,r.zw-rr)-rr)));
+float rr=min(r.w,18.),b=sdBox(p-r.xy,r.zw-rr)-rr;
+keep=min(keep,mix(.3,1.,smoothstep(-6.,40.,b)));
+txt=max(txt,1.-smoothstep(4.,28.,b));
 }
+float gs=float(uGlass)*txt;
+if(uGlass==1)keep=mix(.75,1.,keep);
 vec3 c=vec3(0.);
 float lw=max(.5*uK,.8);
 for(int k=0;k<2;k++){
@@ -66,7 +71,9 @@ float s=sd-f.x-f.a*sin(6.2831853*u/uWave+uPh[k]-uShift);
 float seed=float(k)*31.;
 float br=1.+uChaos*.5*noise(u*.006+seed-uShift*.5);
 float g=f.z*br,w=f.y*br,t=abs(s)/w;
-float fade=smoothstep(1.6,3.2,g*uK);
+float e=(abs(s)-w-10.)*uK,gk=gs*(1.-smoothstep(-.8,.8,e));
+lane=max(lane,gk);rim=max(rim,gs*exp(-e*e/1.4));
+float fade=smoothstep(1.6,3.2,g*uK)*(1.-.65*gk);
 float base=floor(s/g+.5);
 for(int n=-2;n<=2;n++){
 float idx=base+float(n),h1=hash(idx+seed),h2=hash(idx*1.37+seed+7.);
@@ -90,6 +97,10 @@ c+=body*exp(-max(abs(s)-w*.4,0.)*.045)*.11;
 }
 c=1.-exp(-c*uGain*keep);
 o=vec4(c,max(c.r,max(c.g,c.b)));
+float a=.3*lane;
+o=vec4(o.rgb*(1.-a)+mix(uGlassC,vec3(1.),.07)*a,o.a*(1.-a)+a);
+a=rim*.16;
+o=o*(1.-a)+a;
 }`;
 
 /** Text that dims the strands behind it, per scene. */
@@ -97,7 +108,12 @@ const KEEP: Record<string, string> = {
   hero: '#hero-name, #hero-copy',
   statement: '#statement .w',
   cases: '#track .panel h3, #track .panel p',
+  about: '#about h2, #about p, #about dt, #about dd',
+  how: '#how h2, #how h3, #how p, #how .dur',
+  testimonials: '#testimonials h2, #testimonials .quote > *',
+  contact: '#contact h2, #contact .lead, #contact .reach, #contact form',
 };
+const box = (sel: string) => document.querySelector(sel)?.getBoundingClientRect();
 
 const root = document.documentElement;
 const reduce = matchMedia('(prefers-reduced-motion: reduce)');
@@ -198,9 +214,12 @@ export function start(): Strands | undefined {
   let k = 1;
   let lost = false;
   let on = false;
+  let glass: number[] = [];
 
   const sync = () => {
     on = !lost && !reduce.matches && !isLight();
+    // Glass tint: the contact field color of the current theme.
+    glass = parseOklch(getComputedStyle(root).getPropertyValue('--ink-scene'))[0] ?? [0, 0, 0];
     cv.hidden = !on;
     root.classList.toggle('strands-on', on);
   };
@@ -220,7 +239,7 @@ export function start(): Strands | undefined {
 
   const read = () => {
     if (!on) return noop;
-    const s = blend(sections, scrollY, innerWidth, innerHeight, narrow.matches, pal);
+    const s = blend(sections, scrollY, innerWidth, innerHeight, narrow.matches, pal, box);
     const keep = keepBoxes(s.kind);
     return () => {
       const rt = route(s.pts, s.R, reach(s));
@@ -270,6 +289,8 @@ export function start(): Strands | undefined {
         Float32Array.from({ length: 32 }, (_, i) => keep[i] ?? 0),
       );
       gl.uniform1i(at('uNK'), keep.length / 4);
+      gl.uniform1i(at('uGlass'), s.kind === 'contact' ? 1 : 0);
+      gl.uniform3fv(at('uGlassC'), glass);
       gl.drawArrays(gl.TRIANGLES, 0, 3);
     };
   };
