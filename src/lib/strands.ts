@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Neon strands geometry. Each scene has a station: a 4-point route and two bundles of hairlines.
  * The scroll blends neighboring stations. src/scripts/strands.ts draws the result.
  */
@@ -99,14 +99,17 @@ export function station(
         ],
       };
     case 'about': {
-      // Orbits the clock card: ∩ on phones, U opening left on desktop.
+      // Orbits the clock card: ∩ on phones, U opening left on desktop. Once the card leaves the
+      // top, the ∩ waits just above the screen: the blend to how I work turns its legs about
+      // these corners, and from far above they would sweep out of view.
       const d = at('#about .dial', 0.05, 0.2, 0.45, 0.8);
+      const top = Math.max(d.top - 28, -0.1 * vh);
       return {
         pts: n
           ? [
               [d.left - 8, d.bottom + vh],
-              [d.left - 8, d.top - 28],
-              [d.right + 8, d.top - 28],
+              [d.left - 8, top],
+              [d.right + 8, top],
               [d.right + 8, d.bottom + vh],
             ]
           : [
@@ -126,16 +129,26 @@ export function station(
       };
     }
     case 'how': {
-      // Down the right edge, then the baseline under the services.
+      // Down the right edge, then the baseline under the services. On phones the line first
+      // crosses above the screen, out of view, so its legs match the ∩ of about before it: there
+      // the leg along the top runs to the right, here it runs down the edge. Matched like this
+      // no leg reverses mid-transition (it would shrink through zero and the hairlines fold).
       const x = (n ? 0.975 : 0.985) * vw;
       const y = at('#how .rows', 0, 0.2, 1, 0.85).bottom + 44;
       return {
-        pts: [
-          [x, -0.2 * vh],
-          [x, y],
-          [0.4 * vw, y],
-          [-0.2 * vw, y],
-        ],
+        pts: n
+          ? [
+              [0.2 * vw, -0.3 * vh],
+              [x, -0.3 * vh],
+              [x, y],
+              [-0.2 * vw, y],
+            ]
+          : [
+              [x, -0.2 * vh],
+              [x, y],
+              [0.4 * vw, y],
+              [-0.2 * vw, y],
+            ],
         R: n ? 100 : 170,
         wave: 900,
         gain: 0.9,
@@ -215,6 +228,38 @@ export function station(
 export const reach = (s: Station) =>
   Math.max(...s.f.map((f) => Math.abs(f.o) + f.w * 1.5 + f.a)) + 70 * s.chaos + 16;
 
+const wrap = (a: number) => a - 2 * Math.PI * Math.round(a / (2 * Math.PI));
+const dir = (a: Point, b: Point) => Math.atan2(b[1] - a[1], b[0] - a[0]);
+
+/**
+ * Route points between two stations. The inner points move straight; each end leg keeps its
+ * length and turns about its inner point. A straight move can pass an end through its neighbor:
+ * the leg shrinks to nothing, its arc shrinks with it below the bundle reach and the hairlines
+ * fold into a hard seam. The turn at each corner is blended as a signed angle, so it never
+ * passes through a hairpin.
+ */
+function tween(P: Point[], Q: Point[], t: number): Point[] {
+  const mid = P.map((p, j): Point => {
+    const q = Q[j] ?? p;
+    return [lerp(p[0], q[0], t), lerp(p[1], q[1], t)];
+  });
+  const n = mid.length;
+  if (n < 3 || Q.length !== n || t <= 0 || t >= 1) return mid;
+  const pt = (S: Point[], j: number): Point => S[j] ?? [0, 0];
+  // End leg e–i next to inner point i, whose other neighbor is k.
+  const leg = (e: number, i: number, k: number) => {
+    const turn = (S: Point[]) => wrap(dir(pt(S, k), pt(S, i)) - dir(pt(S, i), pt(S, e)));
+    const len = (S: Point[]) => Math.hypot(pt(S, e)[0] - pt(S, i)[0], pt(S, e)[1] - pt(S, i)[1]);
+    const a = dir(pt(mid, k), pt(mid, i)) - lerp(turn(P), turn(Q), t);
+    const l = lerp(len(P), len(Q), t);
+    const [x, y] = pt(mid, i);
+    mid[e] = [x + l * Math.cos(a), y + l * Math.sin(a)];
+  };
+  leg(0, 1, 2);
+  leg(n - 1, n - 2, n - 3);
+  return mid;
+}
+
 /**
  * Stations of the section at mid-screen and the next one, blended while their boundary crosses
  * the screen. The blend spans at most either section, and the pair changes where a blend ends,
@@ -248,10 +293,7 @@ export function blend(
   return {
     keep: sections.filter((s) => s.bottom > scrollY && s.top < scrollY + vh).map((s) => kind(s.id)),
     glass: lerp(lane(a.id), lane(b?.id), t),
-    pts: A.pts.map((p, j) => {
-      const q = B.pts[j] ?? p;
-      return [lerp(p[0], q[0], t), lerp(p[1], q[1], t)];
-    }),
+    pts: tween(A.pts, B.pts, t),
     R: lerp(A.R, B.R, t),
     wave: lerp(A.wave, B.wave, t),
     gain: lerp(A.gain, B.gain, t),
