@@ -36,7 +36,7 @@ const pad = (n: number) => String(n).padStart(2, '0');
       )}
     </div>
   </div>
-  <div class="txt">
+  <div class="txt bubble">
     <p class="idx">
       {pad(index)} / {pad(total)}
     </p>
@@ -143,6 +143,13 @@ const pad = (n: number) => String(n).padStart(2, '0');
     padding: 0 16px 0 12px;
     border: 1px solid color-mix(in oklch, var(--ink) 50%, transparent);
     border-radius: 999px;
+    /* The header's glass, a shade toward the ink. */
+    background: color-mix(
+      in oklch,
+      color-mix(in oklch, var(--paper), var(--ink) 6%) 70%,
+      transparent
+    );
+    backdrop-filter: blur(12px);
     font-size: 0.9rem;
     font-weight: 500;
     color: var(--ink);
@@ -154,7 +161,11 @@ const pad = (n: number) => String(n).padStart(2, '0');
   }
   @media (hover: hover) and (pointer: fine) {
     a.proof:hover {
-      background: color-mix(in oklch, var(--ink) 8%, transparent);
+      background: color-mix(
+        in oklch,
+        color-mix(in oklch, var(--paper), var(--ink) 12%) 70%,
+        transparent
+      );
     }
   }
   .open {

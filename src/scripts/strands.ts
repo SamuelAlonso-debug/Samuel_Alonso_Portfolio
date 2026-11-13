@@ -11,6 +11,8 @@ in vec2 a; void main() { gl_Position = vec4(a, 0., 1.); }`;
 // Per pixel: the nearest route piece (3 segments, 2 arcs) gives a signed offset s and a length u.
 // uA: arc centre, radius, start angle. uB: sweep, u0, side, on. Each bundle draws its 5 nearest
 // hairlines (≥0.8 device px wide, or they alias; under ~2 px spacing they blend to the average),
+// At a free end (cap: angle past the end of the first or last segment, uLast) both offset bundles
+// ring the end and crossfade where they meet, or their colors would butt into a cut.
 // breathes and wanders with chaos, sends out 3 strays and adds a soft bloom. Text rows dim it.
 // Contact (uGlass): where a rail passes under text, a glass lane (bundle + 10 px gap) melts the
 // hairlines into a glow under a 30% tint and a thin rim. Light (uLight): saturated dark ink, little haze.
@@ -21,18 +23,23 @@ uniform vec2 uRes;uniform float uK;
 uniform vec4 uS[3];uniform float uSU[3];uniform vec4 uA[2];uniform vec4 uB[2];
 uniform vec4 uF[2];uniform float uPh[2];uniform vec3 uC[2];uniform vec3 uE[2];
 uniform float uWave,uShift,uGain,uReach,uChaos;
-uniform vec4 uKeep[8];uniform int uNK,uLight;uniform float uGlass;uniform vec3 uGlassC;
+uniform vec4 uKeep[8];uniform int uNK,uLight,uLast;uniform float uGlass;uniform vec3 uGlassC;
 out vec4 o;
 float hash(float n){return fract(sin(n*127.1)*43758.5453);}
 float noise(float x){return .6*sin(x)+.3*sin(2.17*x+1.3)+.1*sin(4.31*x+2.1);}
 float sdBox(vec2 p,vec2 b){vec2 d=abs(p)-b;return length(max(d,0.))+min(max(d.x,d.y),0.);}
 void main(){
 vec2 p=vec2(gl_FragCoord.x,uRes.y-gl_FragCoord.y)/uK;
-float best=1e9,sd=0.,u=0.;
+float best=1e9,sd=0.,u=0.,cap=9.;
 for(int i=0;i<3;i++){
 vec2 a=uS[i].xy,ab=uS[i].zw-a;
-float l2=max(dot(ab,ab),1e-4),t=clamp(dot(p-a,ab)/l2,0.,1.),d=length(p-a-ab*t);
-if(d<best){best=d;sd=ab.x*(p.y-a.y)-ab.y*(p.x-a.x)<0.?-d:d;u=uSU[i]+t*sqrt(l2);}
+float l2=max(dot(ab,ab),1e-4),tr=dot(p-a,ab)/l2,t=clamp(tr,0.,1.),d=length(p-a-ab*t);
+if(d<best){
+float l=sqrt(l2),cr=ab.x*(p.y-a.y)-ab.y*(p.x-a.x);
+best=d;sd=cr<0.?-d:d;u=uSU[i]+t*l;cap=9.;
+if(i==uLast&&tr>1.)cap=atan(cr/l,(tr-1.)*l);
+if(i==0&&tr<0.)cap=atan(cr/l,-tr*l);
+}
 }
 for(int i=0;i<2;i++){
 vec4 A=uA[i],B=uB[i];
@@ -41,7 +48,7 @@ vec2 q=p-A.xy;
 float rr=length(q),rel=mod((atan(q.y,q.x)-A.w)*sign(B.x),6.2831853);
 if(rel>abs(B.x))continue;
 float d=abs(rr-A.z);
-if(d<best){best=d;sd=B.z*(A.z-rr);u=B.y+rel*A.z;}
+if(d<best){best=d;sd=B.z*(A.z-rr);u=B.y+rel*A.z;cap=9.;}
 }
 if(best>uReach){o=vec4(0.);return;}
 float keep=1.,txt=0.,lane=0.,rim=0.,dk=float(1-uLight),bl=uLight==1?.3:1.;
@@ -58,7 +65,10 @@ vec3 c=vec3(0.);
 float lw=max(.5*uK,.8);
 for(int k=0;k<2;k++){
 vec4 f=uF[k];
-float s=sd-f.x-f.a*sin(6.2831853*u/uWave+uPh[k]-uShift);
+vec3 c0=c;
+float sk=sd,wk=1.;
+if(cap<9.&&abs(f.x)>1.){sk=sign(f.x)*best;wk=smoothstep(-.6,.6,sign(f.x)*cap);}
+float s=sk-f.x-f.a*sin(6.2831853*u/uWave+uPh[k]-uShift);
 float seed=float(k)*31.;
 float br=1.+uChaos*.5*noise(u*.006+seed-uShift*.5);
 float g=f.z*br,w=f.y*br,t=abs(s)/w;
@@ -85,6 +95,7 @@ c+=mix(uE[k],vec3(1.),.3*dk)*exp(-dpx*dpx/(lw*lw))*(.5*uK/lw)*1.8*uChaos*(.5+.5*
 vec3 body=mix(uC[k],uE[k],smoothstep(.25,1.,t));
 c+=body*(1.-smoothstep(.55,1.,t))*(.07+.3*(1.-fade))*bl;
 c+=body*exp(-max(abs(s)-w*.4,0.)*.045)*.11*bl;
+c=c0+(c-c0)*wk;
 }
 if(uLight==1){
 float m=max(c.r,max(c.g,c.b)),a=(1.-exp(-m*uGain*keep*1.15))*.92;
@@ -264,6 +275,7 @@ export function start(): Strands | undefined {
       gl.uniform1f(at('uK'), k);
       gl.uniform4fv(at('uS'), SG);
       gl.uniform1fv(at('uSU'), SU);
+      gl.uniform1i(at('uLast'), rt.segments.length - 1);
       gl.uniform4fv(at('uA'), AA);
       gl.uniform4fv(at('uB'), AB);
       gl.uniform4fv(

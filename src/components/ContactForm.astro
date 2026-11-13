@@ -79,8 +79,10 @@ const copy = {
     },
   },
 }[locale];
-const field =
-  'mt-2 block w-full rounded-md border border-muted/40 bg-transparent px-3 py-2.5 text-lg';
+// Compact (home): tighter fields, so the form fits a 720 px screen under the header.
+const field = compact
+  ? 'mt-1.5 block w-full rounded-md border border-muted/40 bg-transparent px-3 py-2'
+  : 'mt-2 block w-full rounded-md border border-muted/40 bg-transparent px-3 py-2.5 text-lg';
 const button = compact
   ? 'border border-current hover:bg-ink/10'
   : 'bg-action text-action-ink hover:bg-action-hover';
@@ -89,7 +91,7 @@ const button = compact
 {siteKey && (
   <form
     id="contact-form"
-    class:list={['grid gap-6', className]}
+    class:list={['grid', compact ? 'gap-4' : 'gap-6', className]}
     novalidate
     hidden
     aria-labelledby={compact ? 'contact-form-title' : undefined}
@@ -141,7 +143,7 @@ const button = compact
       <textarea
         class={field}
         name="message"
-        rows={compact ? 4 : 6}
+        rows={compact ? 3 : 6}
         required
         minlength="20"
         maxlength="4000"
@@ -165,7 +167,7 @@ const button = compact
         {copy.send}
       </button>
     </div>
-    <p class="status text-lg" role="status" aria-live="polite"></p>
+    <p class="status text-lg empty:hidden" role="status" aria-live="polite"></p>
   </form>
 )}
 
